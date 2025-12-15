@@ -149,6 +149,9 @@ return [
             'l2_account_status' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountStatus',
             ],
+            'level2_account_mother' => [
+                'endpoint' => '/api/v1/level2AccountMother',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

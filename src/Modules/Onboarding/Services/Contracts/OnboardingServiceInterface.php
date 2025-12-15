@@ -28,6 +28,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepant
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -152,5 +154,13 @@ interface OnboardingServiceInterface
      * @return L2AccountStatusResponseDTO
      */
     public function getL2AccountStatus(L2AccountStatusRequestDTO $dto): L2AccountStatusResponseDTO;
+
+    /**
+     * Get Level 2 account mother name list.
+     *
+     * @param Level2AccountMotherRequestDTO $dto
+     * @return Level2AccountMotherResponseDTO
+     */
+    public function getLevel2AccountMotherNames(Level2AccountMotherRequestDTO $dto): Level2AccountMotherResponseDTO;
 }
 
