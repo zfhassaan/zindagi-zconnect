@@ -22,6 +22,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountV
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\AccountVerificationRepository;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\AccountLinkingRepository;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\AccountOpeningRepository;
 use zfhassaan\ZindagiZconnect\Repositories\Contracts\AuditLogRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Repositories\AuditLogRepository;
 
@@ -71,6 +73,7 @@ class ZindagiZconnectServiceProvider extends ServiceProvider
         $this->app->singleton(OnboardingRepositoryInterface::class, OnboardingRepository::class);
         $this->app->singleton(AccountVerificationRepositoryInterface::class, AccountVerificationRepository::class);
         $this->app->singleton(AccountLinkingRepositoryInterface::class, AccountLinkingRepository::class);
+        $this->app->singleton(AccountOpeningRepositoryInterface::class, AccountOpeningRepository::class);
 
         // Register module services
         $this->app->singleton(OnboardingServiceInterface::class, OnboardingService::class);

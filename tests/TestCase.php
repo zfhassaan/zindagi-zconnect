@@ -98,6 +98,11 @@ abstract class TestCase extends OrchestraTestCase
                         'transaction_type' => '01',
                         'reserved1' => '02',
                     ],
+                    'account_opening' => [
+                        'endpoint' => '/api/v2/accountopening-blb',
+                        'merchant_type' => '0088',
+                        'company_name' => 'NOVA',
+                    ],
                 ],
             ],
             'security' => [

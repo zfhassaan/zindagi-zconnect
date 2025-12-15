@@ -10,6 +10,7 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\Contracts\OnboardingSe
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
 
 class OnboardingController
 {
@@ -124,6 +125,29 @@ class OnboardingController
 
         $dto = AccountLinkingRequestDTO::fromArray($request->all());
         $response = $this->onboardingService->linkAccount($dto);
+
+        return response()->json($response->toArray(), $response->success ? 200 : 400);
+    }
+
+    /**
+     * Open account with customer information.
+     */
+    public function openAccount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'cnic' => 'required|string|size:13',
+            'mobile_no' => 'required|string|size:11',
+            'email_id' => 'required|string|max:25',
+            'cnic_issuance_date' => 'required|string|size:8',
+            'mobile_network' => 'required|string|size:5',
+            'merchant_type' => 'nullable|string|size:4',
+            'trace_no' => 'nullable|string|size:6',
+            'date_time' => 'nullable|string|size:14',
+            'company_name' => 'nullable|string|size:4',
+        ]);
+
+        $dto = AccountOpeningRequestDTO::fromArray($request->all());
+        $response = $this->onboardingService->openAccount($dto);
 
         return response()->json($response->toArray(), $response->success ? 200 : 400);
     }

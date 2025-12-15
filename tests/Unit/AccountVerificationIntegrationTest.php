@@ -106,7 +106,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -207,7 +208,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -318,7 +320,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -437,7 +440,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);

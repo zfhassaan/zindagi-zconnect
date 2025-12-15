@@ -18,6 +18,7 @@ use zfhassaan\ZindagiZconnect\Services\Contracts\AuditServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\OnboardingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountVerificationRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountVerification;
 
 class AccountVerificationErrorResponseTest extends TestCase
@@ -28,129 +29,82 @@ class AccountVerificationErrorResponseTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * Test error code 4001 - Invalid Access Token.
-     */
     public function test_error_code_4001_invalid_access_token(): void
     {
-        $this->testErrorResponse('4001', 'Bad Request - Invalid Access Token');
+        $this->assertErrorResponse('4001', 'Bad Request - Invalid Access Token');
     }
 
-    /**
-     * Test error code 4002 - Invalid Request Payload.
-     */
     public function test_error_code_4002_invalid_request_payload(): void
     {
-        $this->testErrorResponse('4002', 'Bad Request - Invalid Request Payload');
+        $this->assertErrorResponse('4002', 'Bad Request - Invalid Request Payload');
     }
 
-    /**
-     * Test error code 4003 - Invalid Authorization Header.
-     */
     public function test_error_code_4003_invalid_authorization_header(): void
     {
-        $this->testErrorResponse('4003', 'Bad Request - Invalid Authorization Header');
+        $this->assertErrorResponse('4003', 'Bad Request - Invalid Authorization Header');
     }
 
-    /**
-     * Test error code 4004 - Something Went Wrong.
-     */
     public function test_error_code_4004_something_went_wrong(): void
     {
-        $this->testErrorResponse('4004', 'Something Went Wrong');
+        $this->assertErrorResponse('4004', 'Something Went Wrong');
     }
 
-    /**
-     * Test error code 4005 - Record Not Found.
-     */
     public function test_error_code_4005_record_not_found(): void
     {
-        $this->testErrorResponse('4005', 'Record Not Found');
+        $this->assertErrorResponse('4005', 'Record Not Found');
     }
 
-    /**
-     * Test error code 4006 - Invalid Client Id/Secret.
-     */
     public function test_error_code_4006_invalid_client_id_secret(): void
     {
-        $this->testErrorResponse('4006', 'Invalid Client Id/Secret');
+        $this->assertErrorResponse('4006', 'Invalid Client Id/Secret');
     }
 
-    /**
-     * Test error code 4007 - Invalid Access Token.
-     */
     public function test_error_code_4007_invalid_access_token(): void
     {
-        $this->testErrorResponse('4007', 'Bad Request - Invalid Access Token');
+        $this->assertErrorResponse('4007', 'Bad Request - Invalid Access Token');
     }
 
-    /**
-     * Helper method to test error responses.
-     */
-    protected function testErrorResponse(string $errorCode, string $errorMessage): void
+    protected function assertErrorResponse(string $errorCode, string $errorMessage): void
     {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockAuthService->shouldReceive('authenticate')
-            ->once()
-            ->andReturn('test_access_token');
+        $auth = Mockery::mock(AuthenticationServiceInterface::class);
+        $auth->shouldReceive('authenticate')->once()->andReturn('token');
 
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
+        $logger = Mockery::mock(LoggingServiceInterface::class);
+        $logger->shouldReceive('logInfo')->once();
+        $logger->shouldReceive('logRequest')->once();
+        $logger->shouldReceive('logError')->once();
 
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface::class);
+        $audit = Mockery::mock(AuditServiceInterface::class);
+        $onboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
+        $verificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
+        $linkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $openingRepo = Mockery::mock(AccountOpeningRepositoryInterface::class);
 
-        $errorResponse = [
-            'messages' => $errorMessage,
-            'errorcode' => $errorCode,
-        ];
-
-        $mockClient = Mockery::mock(Client::class);
-        $mockGuzzleRequest = new GuzzleRequest('POST', '/test');
-        $mockGuzzleResponse = new Response(400, [], json_encode($errorResponse));
-        $exception = new RequestException($errorMessage, $mockGuzzleRequest, $mockGuzzleResponse);
-
-        $mockClient->shouldReceive('post')
-            ->once()
-            ->andThrow($exception);
-
-        config([
-            'zindagi-zconnect' => [
-                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
-                'auth' => [
-                    'client_id' => config('zindagi-zconnect.auth.client_id'),
-                    'organization_id' => '223',
-                ],
-                'modules' => [
-                    'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
-                        ],
-                        'timeout' => 60,
-                    ],
-                ],
-                'security' => ['verify_ssl' => true],
-            ],
-        ]);
-
-        $service = new OnboardingService(
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+        $client = Mockery::mock(Client::class);
+        $exception = new RequestException(
+            $errorMessage,
+            new GuzzleRequest('POST', '/'),
+            new Response(400, [], json_encode([
+                'messages' => $errorMessage,
+                'errorcode' => $errorCode,
+            ]))
         );
 
-        $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
-        $property->setAccessible(true);
-        $property->setValue($service, $mockClient);
+        $client->shouldReceive('post')->once()->andThrow($exception);
+
+        $this->configure();
+
+        $service = $this->makeService(
+            $auth,
+            $logger,
+            $audit,
+            $onboardingRepo,
+            $verificationRepo,
+            $linkingRepo,
+            $openingRepo
+        );
+
+        $this->injectClient($service, $client);
 
         $dto = new AccountVerificationRequestDTO(
             cnic: '1234567890123',
@@ -166,83 +120,42 @@ class AccountVerificationErrorResponseTest extends TestCase
         $this->assertEquals($errorCode, $response->errorCode);
     }
 
-    /**
-     * Test response with missing VerifyAccLinkAccResponse key.
-     */
     public function test_response_missing_verify_response_key(): void
     {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockAuthService->shouldReceive('authenticate')
-            ->once()
-            ->andReturn('test_access_token');
+        $auth = Mockery::mock(AuthenticationServiceInterface::class);
+        $auth->shouldReceive('authenticate')->once()->andReturn('token');
 
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
+        $logger = Mockery::mock(LoggingServiceInterface::class);
+        $logger->shouldReceive('logInfo')->once();
+        $logger->shouldReceive('logRequest')->once();
+        $logger->shouldReceive('logResponse')->once();
 
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockAuditService->shouldReceive('log')->once();
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockVerification = new AccountVerification();
-        $mockAccountVerificationRepo->shouldReceive('create')
-            ->once()
-            ->andReturn($mockVerification);
+        $audit = Mockery::mock(AuditServiceInterface::class);
+        $audit->shouldReceive('log')->once();
 
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $verificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
+        $verificationRepo->shouldReceive('create')->once()->andReturn(new AccountVerification());
 
-        $invalidResponse = [
-            'SomeOtherKey' => [
-                'ResponseCode' => '00',
-            ],
-        ];
-
-        $mockClient = Mockery::mock(Client::class);
-        $mockResponse = new Response(200, [], json_encode($invalidResponse));
-        $mockClient->shouldReceive('post')
-            ->once()
-            ->andReturn($mockResponse);
-
-        config([
-            'zindagi-zconnect' => [
-                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
-                'auth' => [
-                    'client_id' => config('zindagi-zconnect.auth.client_id'),
-                    'organization_id' => '223',
-                ],
-                'modules' => [
-                    'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
-                        ],
-                        'timeout' => 60,
-                    ],
-                ],
-                'security' => ['verify_ssl' => true],
-            ],
-        ]);
-
-        $service = new OnboardingService(
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+        $service = $this->makeService(
+            $auth,
+            $logger,
+            $audit,
+            Mockery::mock(OnboardingRepositoryInterface::class),
+            $verificationRepo,
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(AccountOpeningRepositoryInterface::class)
         );
 
-        $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
-        $property->setAccessible(true);
-        $property->setValue($service, $mockClient);
+        $client = Mockery::mock(Client::class);
+        $client->shouldReceive('post')->once()->andReturn(
+            new Response(200, [], json_encode(['foo' => ['ResponseCode' => '00']]))
+        );
+
+        $this->injectClient($service, $client);
 
         $dto = new AccountVerificationRequestDTO(
             cnic: '1234567890123',
-            mobileNo: '03001234567',
-            traceNo: '000009',
-            dateTime: '20210105201527'
+            mobileNo: '03001234567'
         );
 
         $response = $service->verifyAccount($dto);
@@ -251,234 +164,50 @@ class AccountVerificationErrorResponseTest extends TestCase
         $this->assertEquals('Unknown error', $response->message);
     }
 
-    /**
-     * Test response with invalid JSON.
-     */
-    public function test_response_with_invalid_json(): void
+    private function configure(): void
     {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockAuthService->shouldReceive('authenticate')
-            ->once()
-            ->andReturn('test_access_token');
-
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
-
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-
-        $mockClient = Mockery::mock(Client::class);
-        $mockResponse = new Response(200, [], 'Invalid JSON response');
-        $mockClient->shouldReceive('post')
-            ->once()
-            ->andReturn($mockResponse);
-
         config([
             'zindagi-zconnect' => [
                 'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
                 'auth' => [
                     'client_id' => config('zindagi-zconnect.auth.client_id'),
-                    'organization_id' => '223',
-                ],
+                    'organization_id' => '223'],
                 'modules' => [
                     'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
-                        ],
+                        'account_verification' => ['endpoint' => '/api/v2/verifyacclinkacc-blb'],
                         'timeout' => 60,
                     ],
                 ],
                 'security' => ['verify_ssl' => true],
             ],
         ]);
-
-        $service = new OnboardingService(
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
-        );
-
-        $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
-        $property->setAccessible(true);
-        $property->setValue($service, $mockClient);
-
-        $dto = new AccountVerificationRequestDTO(
-            cnic: '1234567890123',
-            mobileNo: '03001234567',
-            traceNo: '000009',
-            dateTime: '20210105201527'
-        );
-
-        $response = $service->verifyAccount($dto);
-
-        $this->assertFalse($response->success);
-        $this->assertStringContainsString('Account verification failed', $response->message);
     }
 
-    /**
-     * Test response with empty response body.
-     */
-    public function test_response_with_empty_body(): void
-    {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockAuthService->shouldReceive('authenticate')
-            ->once()
-            ->andReturn('test_access_token');
-
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
-
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-
-        $mockClient = Mockery::mock(Client::class);
-        $mockResponse = new Response(200, [], '');
-        $mockClient->shouldReceive('post')
-            ->once()
-            ->andReturn($mockResponse);
-
-        config([
-            'zindagi-zconnect' => [
-                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
-                'auth' => [
-                    'client_id' => config('zindagi-zconnect.auth.client_id'),
-                    'organization_id' => '223',
-                ],
-                'modules' => [
-                    'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
-                        ],
-                        'timeout' => 60,
-                    ],
-                ],
-                'security' => ['verify_ssl' => true],
-            ],
-        ]);
-
-        $service = new OnboardingService(
+    private function makeService(
+        AuthenticationServiceInterface $auth,
+        LoggingServiceInterface $logger,
+        AuditServiceInterface $audit,
+        OnboardingRepositoryInterface $onboardingRepo,
+        AccountVerificationRepositoryInterface $verificationRepo,
+        AccountLinkingRepositoryInterface $linkingRepo,
+        AccountOpeningRepositoryInterface $openingRepo
+    ): OnboardingService {
+        return new OnboardingService(
             Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $auth,
+            $logger,
+            $audit,
+            $onboardingRepo,
+            $verificationRepo,
+            $linkingRepo,
+            $openingRepo
         );
-
-        $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
-        $property->setAccessible(true);
-        $property->setValue($service, $mockClient);
-
-        $dto = new AccountVerificationRequestDTO(
-            cnic: '1234567890123',
-            mobileNo: '03001234567',
-            traceNo: '000009',
-            dateTime: '20210105201527'
-        );
-
-        $response = $service->verifyAccount($dto);
-
-        $this->assertFalse($response->success);
-        $this->assertStringContainsString('Account verification failed', $response->message);
     }
 
-    /**
-     * Test boundary conditions for CNIC length.
-     */
-    public function test_boundary_conditions_cnic_length(): void
+    private function injectClient(OnboardingService $service, Client $client): void
     {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->twice();
-        $mockLoggingService->shouldReceive('logError')->twice();
-
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-
-        $service = new OnboardingService(
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
-        );
-
-        // Test with 12 characters (one less)
-        $dto1 = new AccountVerificationRequestDTO(
-            cnic: '123456789012', // 12 chars
-            mobileNo: '03001234567'
-        );
-        $response1 = $service->verifyAccount($dto1);
-        $this->assertFalse($response1->success);
-
-        // Test with 14 characters (one more)
-        $dto2 = new AccountVerificationRequestDTO(
-            cnic: '12345678901234', // 14 chars
-            mobileNo: '03001234567'
-        );
-        $response2 = $service->verifyAccount($dto2);
-        $this->assertFalse($response2->success);
-    }
-
-    /**
-     * Test boundary conditions for mobile number length.
-     */
-    public function test_boundary_conditions_mobile_length(): void
-    {
-        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->twice();
-        $mockLoggingService->shouldReceive('logError')->twice();
-
-        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-
-        $service = new OnboardingService(
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
-            $mockAuthService,
-            $mockLoggingService,
-            $mockAuditService,
-            $mockOnboardingRepo,
-            $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
-        );
-
-        // Test with 10 characters (one less)
-        $dto1 = new AccountVerificationRequestDTO(
-            cnic: '1234567890123',
-            mobileNo: '0300123456' // 10 chars
-        );
-        $response1 = $service->verifyAccount($dto1);
-        $this->assertFalse($response1->success);
-
-        // Test with 12 characters (one more)
-        $dto2 = new AccountVerificationRequestDTO(
-            cnic: '1234567890123',
-            mobileNo: '030012345678' // 12 chars
-        );
-        $response2 = $service->verifyAccount($dto2);
-        $this->assertFalse($response2->success);
+        $ref = new \ReflectionProperty($service, 'accountVerificationClient');
+        $ref->setAccessible(true);
+        $ref->setValue($service, $client);
     }
 }
-

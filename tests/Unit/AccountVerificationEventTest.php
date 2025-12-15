@@ -100,7 +100,8 @@ class AccountVerificationEventTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -146,7 +147,8 @@ class AccountVerificationEventTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $dto = new AccountVerificationRequestDTO(
@@ -232,7 +234,8 @@ class AccountVerificationEventTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);

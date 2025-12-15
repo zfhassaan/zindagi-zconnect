@@ -11,6 +11,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequest
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -18,11 +20,13 @@ use zfhassaan\ZindagiZconnect\Services\Contracts\AuditServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\OnboardingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountVerificationRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingInitiated;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingVerified;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingCompleted;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountVerified;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountLinked;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountOpened;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +38,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $accountVerificationEndpoint;
     protected Client $accountLinkingClient;
     protected string $accountLinkingEndpoint;
+    protected Client $accountOpeningClient;
+    protected string $accountOpeningEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -42,7 +48,8 @@ class OnboardingService implements OnboardingServiceInterface
         protected AuditServiceInterface $auditService,
         protected OnboardingRepositoryInterface $repository,
         protected AccountVerificationRepositoryInterface $accountVerificationRepository,
-        protected AccountLinkingRepositoryInterface $accountLinkingRepository
+        protected AccountLinkingRepositoryInterface $accountLinkingRepository,
+        protected AccountOpeningRepositoryInterface $accountOpeningRepository
     ) {
         $this->endpoint = config('zindagi-zconnect.modules.onboarding.endpoint', '/onboarding');
         
@@ -68,6 +75,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->accountLinkingEndpoint = $accountLinkingConfig['endpoint'] ?? '/api/v2/linkacc-blb';
         
         $this->accountLinkingClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        // Setup account opening client
+        $accountOpeningConfig = $config['modules']['onboarding']['account_opening'] ?? [];
+        $this->accountOpeningEndpoint = $accountOpeningConfig['endpoint'] ?? '/api/v2/accountopening-blb';
+        
+        $this->accountOpeningClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -297,14 +318,20 @@ class OnboardingService implements OnboardingServiceInterface
             $token = $this->authService->authenticate();
             $config = config('zindagi-zconnect');
 
+
+            if (empty($config['auth']['client_id'])) {
+                throw new \RuntimeException('Missing client_id configuration');
+            }
+
             // Prepare headers
             $headers = [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'clientId' => $config['auth']['client_id'],
+                'clientId' => $config['auth']['client_id'] ?? '',
                 'clientSecret' => $token,
                 'organizationId' => $config['auth']['organization_id'] ?? '223',
             ];
+            
 
             // Prepare request body
             $requestBody = $dto->toApiRequest();
@@ -328,6 +355,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
+                
                 
                 return new AccountVerificationResponseDTO(
                     success: false,
@@ -393,8 +421,14 @@ class OnboardingService implements OnboardingServiceInterface
             }
 
             if ($errorResponse) {
-                return AccountVerificationResponseDTO::fromApiResponse($errorResponse);
+                return new AccountVerificationResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Account verification failed',
+                    errorCode: (string) ($errorResponse['errorcode'] ?? '')
+                );
             }
+            
 
             return new AccountVerificationResponseDTO(
                 success: false,
@@ -535,8 +569,14 @@ class OnboardingService implements OnboardingServiceInterface
             }
 
             if ($errorResponse) {
-                return AccountLinkingResponseDTO::fromApiResponse($errorResponse);
+                return new AccountLinkingResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Account linking failed',
+                    errorCode: (string) ($errorResponse['errorcode'] ?? '')
+                );
             }
+            
 
             return new AccountLinkingResponseDTO(
                 success: false,
@@ -560,6 +600,199 @@ class OnboardingService implements OnboardingServiceInterface
                 message: 'Account linking failed: ' . $e->getMessage(),
                 errorCode: (string) $e->getCode()
             );
+        }
+    }
+
+    /**
+     * Open account with customer information.
+     */
+    public function openAccount(AccountOpeningRequestDTO $dto): AccountOpeningResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating account opening', [
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'email_id' => $dto->emailId,
+                'trace_no' => $dto->traceNo,
+            ]);
+
+            // Validate DTO
+            $this->validateOpeningRequest($dto);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toApiRequest();
+
+            // Log request
+            $this->loggingService->logRequest($this->accountOpeningEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->accountOpeningClient->post($this->accountOpeningEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account opening API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new AccountOpeningResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Account opening failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->accountOpeningEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $responseDTO = AccountOpeningResponseDTO::fromApiResponse($responseData);
+
+            // Store in database
+            $opening = $this->accountOpeningRepository->create([
+                'trace_no' => $dto->traceNo,
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'email_id' => $dto->emailId,
+                'cnic_issuance_date' => $dto->cnicIssuanceDate,
+                'mobile_network' => $dto->mobileNetwork,
+                'merchant_type' => $dto->merchantType,
+                'request_data' => $dto->toArray(),
+                'response_data' => $responseData,
+                'response_code' => $responseDTO->responseCode,
+                'success' => $responseDTO->success,
+            ]);
+
+            // Audit log
+            $this->auditService->log(
+                'account_opening',
+                'onboarding',
+                $dto->toArray(),
+                auth()->id(),
+                $dto->traceNo
+            );
+
+            // Fire event
+            Event::dispatch(new AccountOpened($opening, $responseDTO));
+
+            return $responseDTO;
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to open account',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'email_id' => $dto->emailId,
+                    'trace_no' => $dto->traceNo,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new AccountOpeningResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Account opening failed',
+                    errorCode: (string) ($errorResponse['errorcode'] ?? '')
+                );
+            }
+            
+
+            return new AccountOpeningResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to open account: ' . $e->getMessage(),
+                errorCode: (string) $e->getCode()
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Account opening error',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'email_id' => $dto->emailId,
+                ],
+                $e
+            );
+
+            return new AccountOpeningResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Account opening failed: ' . $e->getMessage(),
+                errorCode: (string) $e->getCode()
+            );
+        }
+    }
+
+    /**
+     * Validate opening request.
+     */
+    protected function validateOpeningRequest(AccountOpeningRequestDTO $dto): void
+    {
+        if (empty($dto->cnic) || strlen($dto->cnic) !== 13) {
+            throw new \InvalidArgumentException('CNIC must be exactly 13 characters');
+        }
+
+        if (empty($dto->mobileNo) || strlen($dto->mobileNo) !== 11) {
+            throw new \InvalidArgumentException('Mobile number must be exactly 11 characters');
+        }
+
+        if (empty($dto->emailId) || strlen($dto->emailId) > 25) {
+            throw new \InvalidArgumentException('EmailId must be maximum 25 characters');
+        }
+
+        if (empty($dto->cnicIssuanceDate) || strlen($dto->cnicIssuanceDate) !== 8) {
+            throw new \InvalidArgumentException('CnicIssuanceDate must be exactly 8 characters (YYYYMMDD)');
+        }
+
+        if (empty($dto->mobileNetwork) || strlen($dto->mobileNetwork) !== 5) {
+            throw new \InvalidArgumentException('MobileNetwork must be exactly 5 characters');
+        }
+
+        if (empty($dto->merchantType) || strlen($dto->merchantType) !== 4) {
+            throw new \InvalidArgumentException('MerchantType must be exactly 4 characters');
+        }
+
+        if (empty($dto->traceNo) || strlen($dto->traceNo) !== 6) {
+            throw new \InvalidArgumentException('TraceNo must be exactly 6 characters');
+        }
+
+        if (empty($dto->dateTime) || strlen($dto->dateTime) !== 14) {
+            throw new \InvalidArgumentException('DateTime must be exactly 14 characters (YYYYMMDDHHmmss)');
+        }
+
+        if (empty($dto->companyName) || strlen($dto->companyName) !== 4) {
+            throw new \InvalidArgumentException('CompanyName must be exactly 4 characters');
         }
     }
 

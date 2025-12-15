@@ -115,7 +115,8 @@ class AccountLinkingIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -220,7 +221,8 @@ class AccountLinkingIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -319,7 +321,8 @@ class AccountLinkingIntegrationTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);

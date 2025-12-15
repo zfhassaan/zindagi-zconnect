@@ -8,34 +8,25 @@ use Tests\TestCase;
 use Mockery;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
-use Illuminate\Support\Facades\Event;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\OnboardingService;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountLinked;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuditServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\OnboardingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountVerificationRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountLinking;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountOpening;
 
-class AccountLinkingEventTest extends TestCase
+class AccountOpeningServiceTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
-
     /**
-     * Test AccountLinked event is dispatched on successful linking.
+     * Test successful account opening.
      */
-    public function test_account_linked_event_dispatched(): void
+    public function test_successful_account_opening(): void
     {
-        Event::fake();
-
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockAuthService->shouldReceive('authenticate')
             ->once()
@@ -49,23 +40,19 @@ class AccountLinkingEventTest extends TestCase
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockAuditService->shouldReceive('log')->once();
 
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-        $mockLinking = new AccountLinking([
-            'trace_no' => '000001',
-            'cnic' => '1234567890123',
-            'mobile_no' => '03001234567',
-        ]);
-        $mockAccountLinkingRepo->shouldReceive('create')
-            ->once()
-            ->andReturn($mockLinking);
-
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
+        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockAccountOpeningRepo = Mockery::mock(AccountOpeningRepositoryInterface::class);
+        $mockOpening = new AccountOpening();
+        $mockAccountOpeningRepo->shouldReceive('create')
+            ->once()
+            ->andReturn($mockOpening);
 
         $successResponse = [
-            'LinkAccountResponse' => [
+            'AccountOpeningResponse' => [
                 'ResponseCode' => '00',
-                'AccountTitle' => 'MUHAMMADARSALANKHAN',
+                'ResponseDetails' => ['Successful'],
             ],
         ];
 
@@ -84,8 +71,8 @@ class AccountLinkingEventTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_linking' => [
-                            'endpoint' => '/api/v2/linkacc-blb',
+                        'account_opening' => [
+                            'endpoint' => '/api/v2/accountopening-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -102,36 +89,36 @@ class AccountLinkingEventTest extends TestCase
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
             $mockAccountLinkingRepo,
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
+            $mockAccountOpeningRepo
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountLinkingClient');
+        $property = $reflection->getProperty('accountOpeningClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountLinkingRequestDTO(
+        $dto = new AccountOpeningRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000001',
-            dateTime: '20210105201527'
+            emailId: 'test@example.com',
+            cnicIssuanceDate: '20151116',
+            mobileNetwork: 'UFONE',
+            traceNo: '000011',
+            dateTime: '20220117115415'
         );
 
-        $service->linkAccount($dto);
+        $response = $service->openAccount($dto);
 
-        Event::assertDispatched(AccountLinked::class, function ($event) {
-            return $event->linking instanceof AccountLinking
-                && $event->response instanceof AccountLinkingResponseDTO;
-        });
+        $this->assertInstanceOf(AccountOpeningResponseDTO::class, $response);
+        $this->assertTrue($response->success);
+        $this->assertEquals('00', $response->responseCode);
     }
 
     /**
-     * Test AccountLinked event is not dispatched on failure.
+     * Test account opening with invalid CNIC length.
      */
-    public function test_account_linked_event_not_dispatched_on_failure(): void
+    public function test_account_opening_with_invalid_cnic_length(): void
     {
-        Event::fake();
-
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
@@ -141,6 +128,7 @@ class AccountLinkingEventTest extends TestCase
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockAccountOpeningRepo = Mockery::mock(AccountOpeningRepositoryInterface::class);
 
         config([
             'zindagi-zconnect' => [
@@ -151,8 +139,8 @@ class AccountLinkingEventTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_linking' => [
-                            'endpoint' => '/api/v2/linkacc-blb',
+                        'account_opening' => [
+                            'endpoint' => '/api/v2/accountopening-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -169,23 +157,87 @@ class AccountLinkingEventTest extends TestCase
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
             $mockAccountLinkingRepo,
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
+            $mockAccountOpeningRepo
         );
 
-        $dto = new AccountLinkingRequestDTO(
-            cnic: '123456789012', // Invalid length
-            mobileNo: '03001234567'
+        $dto = new AccountOpeningRequestDTO(
+            cnic: '123456789012', // 12 chars - invalid
+            mobileNo: '03001234567',
+            emailId: 'test@example.com',
+            cnicIssuanceDate: '20151116',
+            mobileNetwork: 'UFONE'
         );
 
-        $service->linkAccount($dto);
+        $response = $service->openAccount($dto);
 
-        Event::assertNotDispatched(AccountLinked::class);
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('CNIC must be exactly 13 characters', $response->message);
     }
 
     /**
-     * Test audit log is created on successful linking.
+     * Test account opening with invalid email length.
      */
-    public function test_audit_log_created_on_success(): void
+    public function test_account_opening_with_invalid_email_length(): void
+    {
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
+
+        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
+        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
+        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockAccountOpeningRepo = Mockery::mock(AccountOpeningRepositoryInterface::class);
+
+        config([
+            'zindagi-zconnect' => [
+                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
+                'auth' => [
+                    'client_id' => config('zindagi-zconnect.auth.client_id'),
+                    'organization_id' => '223',
+                ],
+                'modules' => [
+                    'onboarding' => [
+                        'account_opening' => [
+                            'endpoint' => '/api/v2/accountopening-blb',
+                        ],
+                        'timeout' => 60,
+                    ],
+                ],
+                'security' => ['verify_ssl' => true],
+            ],
+        ]);
+
+        $service = new OnboardingService(
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
+            $mockAuthService,
+            $mockLoggingService,
+            $mockAuditService,
+            $mockOnboardingRepo,
+            $mockAccountVerificationRepo,
+            $mockAccountLinkingRepo,
+            $mockAccountOpeningRepo
+        );
+
+        $dto = new AccountOpeningRequestDTO(
+            cnic: '1234567890123',
+            mobileNo: '03001234567',
+            emailId: str_repeat('a', 26), // 26 chars - exceeds max 25
+            cnicIssuanceDate: '20151116',
+            mobileNetwork: 'UFONE'
+        );
+
+        $response = $service->openAccount($dto);
+
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('EmailId must be maximum 25 characters', $response->message);
+    }
+
+    /**
+     * Test account opening with API error response.
+     */
+    public function test_account_opening_with_api_error_response(): void
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockAuthService->shouldReceive('authenticate')
@@ -196,36 +248,27 @@ class AccountLinkingEventTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockAuditService->shouldReceive('log')
-            ->once()
-            ->with(
-                'account_linking',
-                'onboarding',
-                Mockery::type('array'),
-                null,
-                '000001'
-            );
-
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
-        $mockLinking = new AccountLinking();
-        $mockAccountLinkingRepo->shouldReceive('create')
-            ->once()
-            ->andReturn($mockLinking);
-
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
+        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockAccountOpeningRepo = Mockery::mock(AccountOpeningRepositoryInterface::class);
+        $mockOpening = new AccountOpening();
+        $mockAccountOpeningRepo->shouldReceive('create')
+            ->once()
+            ->andReturn($mockOpening);
 
-        $successResponse = [
-            'LinkAccountResponse' => [
-                'ResponseCode' => '00',
-                'AccountTitle' => 'MUHAMMADARSALANKHAN',
+        $errorResponse = [
+            'AccountOpeningResponse' => [
+                'ResponseCode' => '01',
+                'ResponseDetails' => ['Account opening failed'],
             ],
         ];
 
         $mockClient = Mockery::mock(Client::class);
-        $mockResponse = new Response(200, [], json_encode($successResponse));
+        $mockResponse = new Response(200, [], json_encode($errorResponse));
         $mockClient->shouldReceive('post')
             ->once()
             ->andReturn($mockResponse);
@@ -239,8 +282,8 @@ class AccountLinkingEventTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_linking' => [
-                            'endpoint' => '/api/v2/linkacc-blb',
+                        'account_opening' => [
+                            'endpoint' => '/api/v2/accountopening-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -257,25 +300,27 @@ class AccountLinkingEventTest extends TestCase
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
             $mockAccountLinkingRepo,
-            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
+            $mockAccountOpeningRepo
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountLinkingClient');
+        $property = $reflection->getProperty('accountOpeningClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountLinkingRequestDTO(
+        $dto = new AccountOpeningRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000001',
-            dateTime: '20210105201527'
+            emailId: 'test@example.com',
+            cnicIssuanceDate: '20151116',
+            mobileNetwork: 'UFONE'
         );
 
-        $response = $service->linkAccount($dto);
-        
-        $this->assertInstanceOf(\zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO::class, $response);
-        $this->assertTrue($response->success);
+        $response = $service->openAccount($dto);
+
+        $this->assertFalse($response->success);
+        $this->assertEquals('01', $response->responseCode);
+        $this->assertEquals('Account opening failed', $response->message);
     }
 }
 

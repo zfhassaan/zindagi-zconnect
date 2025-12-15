@@ -143,7 +143,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -229,7 +230,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -302,7 +304,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -375,7 +378,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -437,7 +441,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         // Test with 12 characters (one less)
@@ -498,7 +503,8 @@ class AccountLinkingErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            $mockAccountLinkingRepo
+            $mockAccountLinkingRepo,
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountOpeningRepositoryInterface::class)
         );
 
         // Test with 10 characters (one less)

@@ -10,6 +10,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequest
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -62,5 +64,13 @@ interface OnboardingServiceInterface
      * @return AccountLinkingResponseDTO
      */
     public function linkAccount(AccountLinkingRequestDTO $dto): AccountLinkingResponseDTO;
+
+    /**
+     * Open account with customer information.
+     *
+     * @param AccountOpeningRequestDTO $dto
+     * @return AccountOpeningResponseDTO
+     */
+    public function openAccount(AccountOpeningRequestDTO $dto): AccountOpeningResponseDTO;
 }
 
