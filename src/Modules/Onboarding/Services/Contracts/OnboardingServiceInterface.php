@@ -14,6 +14,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1RequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -82,5 +84,13 @@ interface OnboardingServiceInterface
      * @return AccountOpeningL1ResponseDTO
      */
     public function openAccountL1(AccountOpeningL1RequestDTO $dto): AccountOpeningL1ResponseDTO;
+
+    /**
+     * Upgrade existing account.
+     *
+     * @param AccountUpgradeRequestDTO $dto
+     * @return AccountUpgradeResponseDTO
+     */
+    public function upgradeAccount(AccountUpgradeRequestDTO $dto): AccountUpgradeResponseDTO;
 }
 

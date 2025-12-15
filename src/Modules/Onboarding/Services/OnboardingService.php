@@ -15,6 +15,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1RequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -30,6 +32,7 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountVerified;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountLinked;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountOpened;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountOpenedL1;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountUpgraded;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Event;
@@ -45,6 +48,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $accountOpeningEndpoint;
     protected Client $accountOpeningL1Client;
     protected string $accountOpeningL1Endpoint;
+    protected Client $accountUpgradeClient;
+    protected string $accountUpgradeEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -108,6 +113,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->accountOpeningL1Endpoint = $accountOpeningL1Config['endpoint'] ?? '/api/v2/accountopeningl1-blb2';
         
         $this->accountOpeningL1Client = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup account upgrade client
+        $accountUpgradeConfig = $config['modules']['onboarding']['account_upgrade'] ?? [];
+        $this->accountUpgradeEndpoint = $accountUpgradeConfig['endpoint'] ?? '/api/v2/upgradeaccount';
+        
+        $this->accountUpgradeClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -965,6 +984,143 @@ class OnboardingService implements OnboardingServiceInterface
     protected function validateOpeningL1Request(AccountOpeningL1RequestDTO $dto): void
     {
         if (empty($dto->fingerTemplate)) {
+             throw new \InvalidArgumentException('Finger template cannot be empty');
+        }
+    }
+
+    /**
+     * Upgrade existing account.
+     */
+    public function upgradeAccount(AccountUpgradeRequestDTO $dto): AccountUpgradeResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating account upgrade', [
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'trace_no' => $dto->traceNo,
+            ]);
+
+            // Validate DTO
+            $this->validateUpgradeRequest($dto);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->accountUpgradeEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->accountUpgradeClient->post($this->accountUpgradeEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account upgrade API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new AccountUpgradeResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Account upgrade failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->accountUpgradeEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $responseDTO = AccountUpgradeResponseDTO::fromArray($responseData);
+            
+            // Audit log
+            $this->auditService->log(
+                'account_upgrade',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->traceNo
+            );
+
+            // Fire event
+            Event::dispatch(new AccountUpgraded($requestBody, $responseDTO));
+
+            return $responseDTO;
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to upgrade account',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'trace_no' => $dto->traceNo,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new AccountUpgradeResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Account upgrade failed',
+                );
+            }
+            
+            return new AccountUpgradeResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to upgrade account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Account upgrade error',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                ],
+                $e
+            );
+
+            return new AccountUpgradeResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Account upgrade failed: ' . $e->getMessage(),
+            );
+        }
+    }
+    
+    protected function validateUpgradeRequest(AccountUpgradeRequestDTO $dto): void
+    {
+         // DTO does most validation
+         if (empty($dto->fingerTemplate)) {
              throw new \InvalidArgumentException('Finger template cannot be empty');
         }
     }
