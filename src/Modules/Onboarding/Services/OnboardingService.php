@@ -21,6 +21,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -58,6 +60,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $l2AccountFieldsEndpoint;
     protected Client $updatePmdKycClient;
     protected string $updatePmdKycEndpoint;
+    protected Client $getL2DiscrepantClient;
+    protected string $getL2DiscrepantEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -163,6 +167,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->updatePmdKycEndpoint = $updatePmdKycConfig['endpoint'] ?? '/api/v1/updatePmdAndKyc';
         
         $this->updatePmdKycClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup Get L2 Discrepant client
+        $getL2DiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
+        $this->getL2DiscrepantEndpoint = $getL2DiscrepantConfig['endpoint'] ?? '/api/v1/getL2AccountUpgradeDiscrepant';
+        
+        $this->getL2DiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1385,6 +1403,116 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to update PMD and KYC: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Get L2 account upgrade discrepant data.
+     */
+    public function getL2AccountUpgradeDiscrepant(GetL2DiscrepantRequestDTO $dto): GetL2DiscrepantResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting L2 account upgrade discrepant data', [
+                'mobile_number' => $dto->mobileNo,
+                'cnic' => $dto->cnic,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->getL2DiscrepantEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->getL2DiscrepantClient->post($this->getL2DiscrepantEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Get L2 Discrepant API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new GetL2DiscrepantResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Get L2 Discrepant failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->getL2DiscrepantEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            return GetL2DiscrepantResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get L2 discrepant data',
+                [
+                    'mobile_number' => $dto->mobileNo,
+                    'cnic' => $dto->cnic,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new GetL2DiscrepantResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 discrepant data',
+                );
+            }
+            
+            return new GetL2DiscrepantResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 discrepant data: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Get L2 discrepant data error',
+                [
+                     'mobile_number' => $dto->mobileNo,
+                ],
+                $e
+            );
+
+            return new GetL2DiscrepantResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 discrepant data: ' . $e->getMessage(),
             );
         }
     }

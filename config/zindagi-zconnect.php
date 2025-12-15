@@ -140,6 +140,9 @@ return [
             'update_pmd_kyc' => [
                 'endpoint' => '/api/v1/updatePmdAndKyc',
             ],
+            'get_l2_discrepant_data' => [
+                'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

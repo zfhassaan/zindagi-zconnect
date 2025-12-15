@@ -20,6 +20,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -112,5 +114,13 @@ interface OnboardingServiceInterface
      * @return UpdatePmdKycResponseDTO
      */
     public function updatePmdAndKyc(UpdatePmdKycRequestDTO $dto): UpdatePmdKycResponseDTO;
+
+    /**
+     * Get L2 account upgrade discrepant data.
+     *
+     * @param GetL2DiscrepantRequestDTO $dto
+     * @return GetL2DiscrepantResponseDTO
+     */
+    public function getL2AccountUpgradeDiscrepant(GetL2DiscrepantRequestDTO $dto): GetL2DiscrepantResponseDTO;
 }
 
