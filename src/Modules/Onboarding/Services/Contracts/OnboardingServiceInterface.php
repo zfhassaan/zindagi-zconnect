@@ -18,6 +18,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -102,5 +104,13 @@ interface OnboardingServiceInterface
      * @return L2AccountFieldsResponseDTO
      */
     public function getL2AccountFields(L2AccountFieldsRequestDTO $dto): L2AccountFieldsResponseDTO;
+
+    /**
+     * Update PMD and KYC.
+     *
+     * @param UpdatePmdKycRequestDTO $dto
+     * @return UpdatePmdKycResponseDTO
+     */
+    public function updatePmdAndKyc(UpdatePmdKycRequestDTO $dto): UpdatePmdKycResponseDTO;
 }
 

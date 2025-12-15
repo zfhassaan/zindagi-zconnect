@@ -137,6 +137,9 @@ return [
             'l2_account_fields' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountFields',
             ],
+            'update_pmd_kyc' => [
+                'endpoint' => '/api/v1/updatePmdAndKyc',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

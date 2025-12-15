@@ -19,6 +19,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -54,6 +56,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $accountUpgradeEndpoint;
     protected Client $l2AccountFieldsClient;
     protected string $l2AccountFieldsEndpoint;
+    protected Client $updatePmdKycClient;
+    protected string $updatePmdKycEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -145,6 +149,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->l2AccountFieldsEndpoint = $l2AccountFieldsConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountFields';
         
         $this->l2AccountFieldsClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup Update PMD KYC client
+        $updatePmdKycConfig = $config['modules']['onboarding']['update_pmd_kyc'] ?? [];
+        $this->updatePmdKycEndpoint = $updatePmdKycConfig['endpoint'] ?? '/api/v1/updatePmdAndKyc';
+        
+        $this->updatePmdKycClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1248,6 +1266,125 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to get L2 account fields: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Update PMD and KYC.
+     */
+    public function updatePmdAndKyc(UpdatePmdKycRequestDTO $dto): UpdatePmdKycResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Updating PMD and KYC', [
+                'mobile_number' => $dto->mobileNumber,
+                'account_id' => $dto->accountId,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->updatePmdKycEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->updatePmdKycClient->post($this->updatePmdKycEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Update PMD KYC API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new UpdatePmdKycResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Update PMD KYC failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->updatePmdKycEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+            
+            // Audit log
+            $this->auditService->log(
+                'update_pmd_kyc',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return UpdatePmdKycResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to update PMD and KYC',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'account_id' => $dto->accountId,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new UpdatePmdKycResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to update PMD and KYC',
+                );
+            }
+            
+            return new UpdatePmdKycResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to update PMD and KYC: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Update PMD and KYC error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                ],
+                $e
+            );
+
+            return new UpdatePmdKycResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to update PMD and KYC: ' . $e->getMessage(),
             );
         }
     }
