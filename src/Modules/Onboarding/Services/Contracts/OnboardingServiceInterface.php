@@ -26,6 +26,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -142,5 +144,13 @@ interface OnboardingServiceInterface
      * @return GetL2AccountsResponseDTO
      */
     public function getL2Accounts(GetL2AccountsRequestDTO $dto): GetL2AccountsResponseDTO;
+
+    /**
+     * Get L2 account status.
+     *
+     * @param L2AccountStatusRequestDTO $dto
+     * @return L2AccountStatusResponseDTO
+     */
+    public function getL2AccountStatus(L2AccountStatusRequestDTO $dto): L2AccountStatusResponseDTO;
 }
 

@@ -27,6 +27,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -70,6 +72,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $getL2AccountsEndpoint;
     protected Client $l2AccountUpgradeDiscrepantClient;
     protected string $l2AccountUpgradeDiscrepantEndpoint;
+    protected Client $l2AccountStatusClient;
+    protected string $l2AccountStatusEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -217,6 +221,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->l2AccountUpgradeDiscrepantEndpoint = $l2AccountUpgradeDiscrepantConfig['endpoint'] ?? '/api/v1/l2AccountUpgradeDiscrepant';
         
         $this->l2AccountUpgradeDiscrepantClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup L2 Account Status client
+        $l2AccountStatusConfig = $config['modules']['onboarding']['l2_account_status'] ?? [];
+        $this->l2AccountStatusEndpoint = $l2AccountStatusConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountStatus';
+        
+        $this->l2AccountStatusClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1777,6 +1795,124 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to submit L2 account upgrade discrepant data: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Get L2 account status.
+     */
+    public function getL2AccountStatus(L2AccountStatusRequestDTO $dto): L2AccountStatusResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting L2 account status', [
+                'mobile_no' => $dto->mobileNo,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->l2AccountStatusEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->l2AccountStatusClient->post($this->l2AccountStatusEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from L2 Account Status API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new L2AccountStatusResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Get L2 Account Status failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->l2AccountStatusEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            // Audit log
+            $this->auditService->log(
+                'l2_account_status',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return L2AccountStatusResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get L2 account status',
+                [
+                    'mobile_no' => $dto->mobileNo,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new L2AccountStatusResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account status',
+                );
+            }
+            
+            return new L2AccountStatusResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 account status: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'L2 Account Status error',
+                [
+                    'mobile_no' => $dto->mobileNo,
+                ],
+                $e
+            );
+
+            return new L2AccountStatusResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 account status: ' . $e->getMessage(),
             );
         }
     }
