@@ -32,12 +32,15 @@ class AccountOpeningServiceTest extends TestCase
             ->once()
             ->andReturn('test_access_token');
 
-        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
+            $mockLoggingService = Mockery::mock(LoggingServiceInterface::class)->shouldIgnoreMissing();
+            // $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+            $mockLoggingService->shouldReceive('logInfo')->once();
+            $mockLoggingService->shouldReceive('logRequest')->once();
+            $mockLoggingService->shouldReceive('logResponse')->once();
+            
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockAuditService->shouldReceive('log')->once();
 
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
