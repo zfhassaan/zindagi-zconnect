@@ -58,7 +58,7 @@ abstract class TestCase extends OrchestraTestCase
             ],
             'auth' => [
                 'client_id' => 'test_client_id',
-                'client_secret' => 'test_client_secret',
+                 'client_secret' => config('zindagi-zconnect'.auth.client_secret'),
                 'api_key' => 'test_api_key',
                 'token_cache_ttl' => 3600,
             ],
@@ -77,7 +77,17 @@ abstract class TestCase extends OrchestraTestCase
                 'onboarding' => [
                     'enabled' => true,
                     'endpoint' => '/onboarding',
+                    'timeout' => 60,
+                    'account_verification' => [
+                        'endpoint' => '/api/v2/verifyacclinkacc-blb',
+                        'merchant_type' => '0088',
+                        'company_name' => 'NOVA',
+                        'transaction_type' => '02',
+                    ],
                 ],
+            ],
+            'security' => [
+                'verify_ssl' => true,
             ],
         ]);
     }

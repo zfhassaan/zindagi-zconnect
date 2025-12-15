@@ -143,4 +143,3 @@ return [
         'default_ttl' => env('ZINDAGI_ZCONNECT_CACHE_TTL', 300), // 5 minutes
     ],
 ];
-
