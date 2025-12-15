@@ -150,8 +150,11 @@ return [
                 'endpoint' => '/api/v1/l2Account/l2AccountStatus',
             ],
             'level2_account_mother' => [
-                'endpoint' => '/api/v1/level2AccountMother',
+                'endpoint' => '/api/v1/l2Account/motherName',
             ],
+            'get_account_info' => [
+                'endpoint' => '/api/v1/accountInfo'
+            ]
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

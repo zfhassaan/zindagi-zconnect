@@ -30,6 +30,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -162,5 +164,13 @@ interface OnboardingServiceInterface
      * @return Level2AccountMotherResponseDTO
      */
     public function getLevel2AccountMotherNames(Level2AccountMotherRequestDTO $dto): Level2AccountMotherResponseDTO;
+
+    /**
+     * Get account information by mobile number.
+     *
+     * @param AccountInfoRequestDTO $dto
+     * @return AccountInfoResponseDTO
+     */
+    public function getAccountInfo(AccountInfoRequestDTO $dto): AccountInfoResponseDTO;
 }
 

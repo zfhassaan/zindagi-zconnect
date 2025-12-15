@@ -31,6 +31,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountStatusResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -78,6 +80,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $l2AccountStatusEndpoint;
     protected Client $level2AccountMotherClient;
     protected string $level2AccountMotherEndpoint;
+    protected Client $accountInfoClient;
+    protected string $accountInfoEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -253,6 +257,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->level2AccountMotherEndpoint = $level2AccountMotherConfig['endpoint'] ?? '/api/v1/level2AccountMother';
         
         $this->level2AccountMotherClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        // Setup Account Info client
+        $accountInfoConfig = $config['modules']['onboarding']['account_info'] ?? [];
+        $this->accountInfoEndpoint = $accountInfoConfig['endpoint'] ?? '/api/v1/accountInfo';
+        
+        $this->accountInfoClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -2047,6 +2065,127 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to get Level 2 account mother names: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Get account information by mobile number.
+     */
+    public function getAccountInfo(AccountInfoRequestDTO $dto): AccountInfoResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting account information', [
+                'mobile_number' => $dto->mobileNumber,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->accountInfoEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->accountInfoClient->post($this->accountInfoEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account info API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new AccountInfoResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Get account info failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->accountInfoEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            // Audit log
+            $this->auditService->log(
+                'account_info',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return AccountInfoResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get account info',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new AccountInfoResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Failed to get account info',
+                    errorCode: $errorResponse['errorcode'] ?? null
+                );
+            }
+            
+            return new AccountInfoResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get account info: ' . $e->getMessage(),
+                errorCode: (string) $e->getCode()
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Get account info error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                ],
+                $e
+            );
+
+            return new AccountInfoResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get account info: ' . $e->getMessage(),
+                errorCode: (string) $e->getCode()
             );
         }
     }
