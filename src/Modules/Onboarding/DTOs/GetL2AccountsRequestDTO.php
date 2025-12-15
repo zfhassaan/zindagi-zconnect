@@ -29,11 +29,24 @@ class GetL2AccountsRequestDTO
 
     protected function validate(): void
     {
-        if (strlen($this->dateTime) !== 14) {
-             throw new InvalidArgumentException('DateTime must be exactly 14 characters (YYYYMMDDHHMMSS)');
+        if (strlen($this->dateTime) !== 16) {
+             throw new InvalidArgumentException('DateTime must be exactly 16 characters (YYYYMMDDHHMMSSms)');
         }
+        
         if (empty($this->rrn)) {
             throw new InvalidArgumentException('RRN cannot be empty');
+        }
+        
+        if (strlen($this->rrn) !== 12) {
+            throw new InvalidArgumentException('RRN must be exactly 12 characters');
+        }
+        
+        if (empty($this->channelId)) {
+            throw new InvalidArgumentException('ChannelId cannot be empty');
+        }
+        
+        if (empty($this->terminalId)) {
+            throw new InvalidArgumentException('TerminalId cannot be empty');
         }
     }
 

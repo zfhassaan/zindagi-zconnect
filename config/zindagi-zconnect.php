@@ -144,7 +144,7 @@ return [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
             ],
             'get_l2_accounts' => [
-                'endpoint' => '/api/v1/getL2Accounts',
+                'endpoint' => '/api/v1/level2Accounts',
             ],
         ],
         'inquiry' => [
