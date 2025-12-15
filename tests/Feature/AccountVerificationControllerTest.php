@@ -285,24 +285,24 @@ class AccountVerificationControllerTest extends TestCase
     public function test_verify_account_endpoint_special_characters(): void
     {
         $mockService = Mockery::mock(OnboardingServiceInterface::class);
-        $mockService->shouldReceive('verifyAccount')
-            ->once()
-            ->andReturn(new AccountVerificationResponseDTO(
-                success: false,
-                responseCode: '',
-                message: 'CNIC must be exactly 13 characters'
-            ));
+        // Service should not be called because validation will fail first
+        $mockService->shouldNotReceive('verifyAccount');
 
         $controller = new \zfhassaan\ZindagiZconnect\Modules\Onboarding\Controllers\OnboardingController($mockService);
         
         $request = \Illuminate\Http\Request::create('/api/onboarding/verify-account', 'POST', [
-            'cnic' => '12345-6789012-3', // With dashes - 15 chars total
-            'mobile_no' => '0300-1234567', // With dash - 12 chars total
+            'cnic' => '12345-6789012-3', // With dashes - 15 chars total (fails size:13 validation)
+            'mobile_no' => '0300-1234567', // With dash - 12 chars total (fails size:11 validation)
         ]);
 
-        // Will pass validation but fail at service level
-        $response = $controller->verifyAccount($request);
-        $this->assertEquals(400, $response->getStatusCode());
+        // Validation should fail before reaching service
+        try {
+            $response = $controller->verifyAccount($request);
+            $this->fail('Expected validation exception');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('cnic', $e->errors());
+            $this->assertArrayHasKey('mobile_no', $e->errors());
+        }
     }
 }
 

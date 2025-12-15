@@ -21,7 +21,10 @@ class AccountLinkingRepository implements AccountLinkingRepositoryInterface
 
     public function findByCnic(string $cnic): ?AccountLinking
     {
-        return AccountLinking::where('cnic', $cnic)->latest()->first();
+        return AccountLinking::where('cnic', $cnic)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
     }
 }
 

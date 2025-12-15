@@ -335,7 +335,10 @@ class AccountLinkingIntegrationTest extends TestCase
             otpPin: null
         );
 
-        $service->linkAccount($dto);
+        $response = $service->linkAccount($dto);
+        
+        $this->assertInstanceOf(\zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO::class, $response);
+        $this->assertTrue($response->success);
     }
 }
 

@@ -321,6 +321,21 @@ class OnboardingService implements OnboardingServiceInterface
             $responseBody = $response->getBody()->getContents();
             $responseData = json_decode($responseBody, true);
 
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account verification API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new AccountVerificationResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Account verification failed: Invalid response from API'
+                );
+            }
+
             // Log response
             $this->loggingService->logResponse(
                 $this->accountVerificationEndpoint,

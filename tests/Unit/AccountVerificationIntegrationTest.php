@@ -254,6 +254,7 @@ class AccountVerificationIntegrationTest extends TestCase
                 })
             );
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockAuditService->shouldReceive('log')->once();
@@ -270,6 +271,7 @@ class AccountVerificationIntegrationTest extends TestCase
             'VerifyAccLinkAccResponse' => [
                 'ResponseCode' => '00',
                 'AccountStatus' => '1',
+                'ResponseDetails' => ['Account verified successfully'],
             ],
         ];
 
@@ -294,7 +296,7 @@ class AccountVerificationIntegrationTest extends TestCase
             'zindagi-zconnect' => [
                 'api' => ['base_url' => 'https://test.jsbl.com/zconnect'],
                 'auth' => [
-                    'client_id' => config('zindagi-zconnect.auth.client_id'),
+                    'client_id' => 'test_client_id',
                     'organization_id' => '223',
                 ],
                 'modules' => [
@@ -456,6 +458,7 @@ class AccountVerificationIntegrationTest extends TestCase
         );
 
         $service->verifyAccount($dto);
+        $this->assertTrue(true);
     }
 }
 

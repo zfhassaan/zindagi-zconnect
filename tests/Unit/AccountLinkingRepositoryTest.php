@@ -86,30 +86,44 @@ class AccountLinkingRepositoryTest extends TestCase
      */
     public function test_find_by_cnic(): void
     {
-        AccountLinking::create([
+        $firstCreatedAt = now()->subDay();
+        $secondCreatedAt = now();
+        
+        $first = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
             'merchant_type' => '0088',
             'success' => true,
-            'created_at' => now()->subDay(),
         ]);
+        // Force update created_at using raw SQL to ensure it's set
+        \DB::statement("UPDATE zindagi_zconnect_account_linkings SET created_at = ? WHERE id = ?", [
+            $firstCreatedAt->format('Y-m-d H:i:s'),
+            $first->id
+        ]);
+        $first->refresh();
 
-        AccountLinking::create([
+        $second = AccountLinking::create([
             'trace_no' => '000002',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234568',
             'merchant_type' => '0088',
             'success' => true,
-            'created_at' => now(),
         ]);
+        // Force update created_at using raw SQL to ensure it's set
+        \DB::statement("UPDATE zindagi_zconnect_account_linkings SET created_at = ? WHERE id = ?", [
+            $secondCreatedAt->format('Y-m-d H:i:s'),
+            $second->id
+        ]);
+        $second->refresh();
 
         $linking = $this->repository->findByCnic('1234567890123');
 
         $this->assertInstanceOf(AccountLinking::class, $linking);
         $this->assertEquals('1234567890123', $linking->cnic);
-        // Should return the latest one
+        // Should return the latest one (most recent created_at)
         $this->assertEquals('000002', $linking->trace_no);
+        $this->assertTrue($linking->created_at->gt($first->created_at));
     }
 
     /**

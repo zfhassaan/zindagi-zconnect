@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use zfhassaan\ZindagiZconnect\Providers\ZindagiZconnectServiceProvider;
 
 abstract class TestCase extends OrchestraTestCase
 {
+    use DatabaseMigrations;
+
     /**
      * Setup the test environment.
      */
@@ -16,9 +19,8 @@ abstract class TestCase extends OrchestraTestCase
     {
         parent::setUp();
 
-        // Load and run migrations
+        // Register package migrations so DatabaseMigrations can run them
         $this->loadMigrationsFrom(__DIR__ . '/../src/database/migrations');
-        $this->artisan('migrate', ['--database' => 'testbench'])->run();
     }
 
     /**
@@ -48,6 +50,10 @@ abstract class TestCase extends OrchestraTestCase
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',
+        ]);
+        // Ensure package migrations are picked up by test runner
+        $app['config']->set('database.migrations', [
+            __DIR__ . '/../src/database/migrations',
         ]);
 
         // Setup zindagi-zconnect config

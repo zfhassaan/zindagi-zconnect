@@ -179,9 +179,9 @@ class AccountLinkingErrorResponseTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockAuditService->shouldReceive('log')->once();
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
         $mockLinking = new \zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountLinking();
         $mockAccountLinkingRepo->shouldReceive('create')
@@ -263,7 +263,6 @@ class AccountLinkingErrorResponseTest extends TestCase
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
@@ -337,7 +336,6 @@ class AccountLinkingErrorResponseTest extends TestCase
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
@@ -405,8 +403,8 @@ class AccountLinkingErrorResponseTest extends TestCase
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
+        $mockLoggingService->shouldReceive('logInfo')->twice();
+        $mockLoggingService->shouldReceive('logError')->twice();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
@@ -466,7 +464,7 @@ class AccountLinkingErrorResponseTest extends TestCase
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logInfo')->twice();
         $mockLoggingService->shouldReceive('logError')->twice();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);

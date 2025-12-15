@@ -182,6 +182,7 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockLoggingService->shouldReceive('logResponse')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockAuditService->shouldReceive('log')->once();
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockVerification = new AccountVerification();
         $mockAccountVerificationRepo->shouldReceive('create')
@@ -263,7 +264,6 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
@@ -337,7 +337,6 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
-        $mockLoggingService->shouldReceive('logResponse')->once();
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
@@ -405,8 +404,8 @@ class AccountVerificationErrorResponseTest extends TestCase
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
+        $mockLoggingService->shouldReceive('logInfo')->twice();
+        $mockLoggingService->shouldReceive('logError')->twice();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
@@ -447,8 +446,8 @@ class AccountVerificationErrorResponseTest extends TestCase
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
-        $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
+        $mockLoggingService->shouldReceive('logInfo')->twice();
+        $mockLoggingService->shouldReceive('logError')->twice();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
