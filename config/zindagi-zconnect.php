@@ -143,6 +143,9 @@ return [
             'get_l2_discrepant_data' => [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
             ],
+            'get_l2_accounts' => [
+                'endpoint' => '/api/v1/getL2Accounts',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

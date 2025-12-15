@@ -23,6 +23,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpdatePmdKycResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -62,6 +64,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $updatePmdKycEndpoint;
     protected Client $getL2DiscrepantClient;
     protected string $getL2DiscrepantEndpoint;
+    protected Client $getL2AccountsClient;
+    protected string $getL2AccountsEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -181,6 +185,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->getL2DiscrepantEndpoint = $getL2DiscrepantConfig['endpoint'] ?? '/api/v1/getL2AccountUpgradeDiscrepant';
         
         $this->getL2DiscrepantClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup Get L2 Accounts client
+        $getL2AccountsConfig = $config['modules']['onboarding']['get_l2_accounts'] ?? [];
+        $this->getL2AccountsEndpoint = $getL2AccountsConfig['endpoint'] ?? '/api/v1/getL2Accounts';
+        
+        $this->getL2AccountsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1513,6 +1531,113 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to get L2 discrepant data: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Get L2 accounts.
+     */
+    public function getL2Accounts(GetL2AccountsRequestDTO $dto): GetL2AccountsResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting L2 accounts', [
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->getL2AccountsEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->getL2AccountsClient->post($this->getL2AccountsEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Get L2 Accounts API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new GetL2AccountsResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Get L2 Accounts failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->getL2AccountsEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            return GetL2AccountsResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get L2 accounts',
+                [
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new GetL2AccountsResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 accounts',
+                );
+            }
+            
+            return new GetL2AccountsResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 accounts: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Get L2 accounts error',
+                [
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            return new GetL2AccountsResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 accounts: ' . $e->getMessage(),
             );
         }
     }
