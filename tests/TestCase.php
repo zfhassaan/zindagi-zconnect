@@ -71,7 +71,7 @@ abstract class TestCase extends OrchestraTestCase
             ],
             'logging' => [
                 'enabled' => true,
-                'channel' => 'daily',
+                'channel' => 'zindagi',
                 'log_requests' => true,
                 'log_responses' => true,
                 'log_sensitive_data' => false,

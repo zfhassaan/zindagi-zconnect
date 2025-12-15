@@ -45,6 +45,8 @@ return [
     'logging' => [
         'enabled' => env('ZINDAGI_ZCONNECT_LOGGING_ENABLED', true),
         'channel' => env('ZINDAGI_ZCONNECT_LOG_CHANNEL', 'zindagi'),
+        'days' => env('ZINDAGI_ZCONNECT_LOG_DAYS', 14),
+        'level' => env('ZINDAGI_ZCONNECT_LOG_LEVEL', 'debug'),
         'log_requests' => env('ZINDAGI_ZCONNECT_LOG_REQUESTS', true),
         'log_responses' => env('ZINDAGI_ZCONNECT_LOG_RESPONSES', true),
         'log_sensitive_data' => env('ZINDAGI_ZCONNECT_LOG_SENSITIVE_DATA', false),

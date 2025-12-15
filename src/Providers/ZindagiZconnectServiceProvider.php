@@ -50,6 +50,25 @@ class ZindagiZconnectServiceProvider extends ServiceProvider
             // Load migrations
             $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
+
+        $this->configureLogging();
+    }
+
+    /**
+     * Configure the custom logging channel for the package.
+     */
+    protected function configureLogging(): void
+    {
+        $config = $this->app['config'];
+
+        if (! $config->has('logging.channels.zindagi')) {
+            $config->set('logging.channels.zindagi', [
+                'driver' => 'daily',
+                'path' => storage_path('logs/zindagi/zindagi.log'),
+                'level' => $this->app['config']->get('zindagi-zconnect.logging.level', 'debug'),
+                'days' => $this->app['config']->get('zindagi-zconnect.logging.days', 14),
+            ]);
+        }
     }
 
     /**
