@@ -13,6 +13,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1ResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -27,6 +29,7 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingCompleted;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountVerified;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountLinked;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountOpened;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountOpenedL1;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Event;
@@ -40,6 +43,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $accountLinkingEndpoint;
     protected Client $accountOpeningClient;
     protected string $accountOpeningEndpoint;
+    protected Client $accountOpeningL1Client;
+    protected string $accountOpeningL1Endpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -89,6 +94,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->accountOpeningEndpoint = $accountOpeningConfig['endpoint'] ?? '/api/v2/accountopening-blb';
         
         $this->accountOpeningClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        // Setup account opening L1 client
+        $accountOpeningL1Config = $config['modules']['onboarding']['account_opening_l1'] ?? [];
+        $this->accountOpeningL1Endpoint = $accountOpeningL1Config['endpoint'] ?? '/api/v2/accountopeningl1-blb2';
+        
+        $this->accountOpeningL1Client = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -793,6 +812,160 @@ class OnboardingService implements OnboardingServiceInterface
 
         if (empty($dto->companyName) || strlen($dto->companyName) !== 4) {
             throw new \InvalidArgumentException('CompanyName must be exactly 4 characters');
+        }
+    }
+
+    /**
+     * Open L1 account with customer information.
+     */
+    public function openAccountL1(AccountOpeningL1RequestDTO $dto): AccountOpeningL1ResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating L1 account opening', [
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'email_id' => $dto->emailId,
+                'trace_no' => $dto->traceNo,
+            ]);
+
+            // Validate DTO
+            $this->validateOpeningL1Request($dto);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->accountOpeningL1Endpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->accountOpeningL1Client->post($this->accountOpeningL1Endpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from L1 account opening API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new AccountOpeningL1ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'L1 Account opening failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->accountOpeningL1Endpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $responseDTO = AccountOpeningL1ResponseDTO::fromArray($responseData);
+            
+            // Store in database
+            $opening = $this->accountOpeningRepository->create([
+                'trace_no' => $dto->traceNo,
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'email_id' => $dto->emailId,
+                'cnic_issuance_date' => $dto->cnicIssuanceDate,
+                'mobile_network' => $dto->mobileNetwork,
+                'merchant_type' => $dto->merchantType,
+                'request_data' => $dto->toArray(),
+                'response_data' => $responseData,
+                'response_code' => $responseDTO->responseCode,
+                'success' => $responseDTO->success,
+            ]);
+
+            // Audit log
+            $this->auditService->log(
+                'account_opening_l1',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->traceNo
+            );
+
+            // Fire event
+            Event::dispatch(new AccountOpenedL1($opening, $responseDTO));
+
+            return $responseDTO;
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to open L1 account',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'email_id' => $dto->emailId,
+                    'trace_no' => $dto->traceNo,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new AccountOpeningL1ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'L1 Account opening failed',
+                );
+            }
+            
+            return new AccountOpeningL1ResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to open L1 account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'L1 Account opening error',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'email_id' => $dto->emailId,
+                ],
+                $e
+            );
+
+            return new AccountOpeningL1ResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'L1 Account opening failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    protected function validateOpeningL1Request(AccountOpeningL1RequestDTO $dto): void
+    {
+        if (empty($dto->fingerTemplate)) {
+             throw new \InvalidArgumentException('Finger template cannot be empty');
         }
     }
 
