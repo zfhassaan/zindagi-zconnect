@@ -670,7 +670,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountOpeningResponseDTO::fromApiResponse($responseData);
-
+            
             // Store in database
             $opening = $this->accountOpeningRepository->create([
                 'trace_no' => $dto->traceNo,

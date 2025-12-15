@@ -46,6 +46,7 @@ class AccountVerificationServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockAuditService->shouldReceive('log')->once();
@@ -378,6 +379,7 @@ class AccountVerificationServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockAuditService->shouldReceive('log')->once();
@@ -744,6 +746,7 @@ class AccountVerificationServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockAuditService->shouldReceive('log')->once();

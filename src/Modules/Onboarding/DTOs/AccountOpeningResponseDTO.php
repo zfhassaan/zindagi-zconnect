@@ -48,13 +48,39 @@ class AccountOpeningResponseDTO
             );
         }
 
+
+        // Handle error response - check if response has ResponseCode directly (without AccountOpeningResponse wrapper)
+        if (isset($response['ResponseCode'])) {
+            $responseCode = $response['ResponseCode'] ?? '01';
+            $success = $responseCode === '00';
+            
+            return new self(
+                success: $success,
+                responseCode: $responseCode,
+                merchantType: $response['MerchantType'] ?? null,
+                traceNo: $response['TraceNo'] ?? null,
+                companyName: $response['CompanyName'] ?? null,
+                dateTime: $response['DateTime'] ?? null,
+                mobileNetwork: $response['MobileNetwork'] ?? null,
+                responseDetails: $response['ResponseDetails'] ?? [],
+                message: $success 
+                    ? ($response['ResponseDetails'][0] ?? 'Account opened successfully')
+                    : ($response['ResponseDetails'][0] ?? 'Account opening failed')
+            );
+        }
+
         // Handle error response
+        $message = $response['messages'] ?? 'Unknown error';
+        if (is_array($message)) {
+            $message = $message[0] ?? 'Unknown error';
+        }
+        
         return new self(
             success: false,
             responseCode: '',
-            message: $response['messages'] ?? 'Unknown error',
+            message: $message,
             errorCode: $response['errorcode'] ?? null,
-            responseDetails: isset($response['messages']) ? [$response['messages']] : []
+            responseDetails: isset($response['messages']) ? (is_array($response['messages']) ? $response['messages'] : [$response['messages']]) : []
         );
     }
 

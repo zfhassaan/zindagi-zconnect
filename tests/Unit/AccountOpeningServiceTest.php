@@ -38,7 +38,6 @@ class AccountOpeningServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logResponse')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockAuditService->shouldReceive('log')->once();
 
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
@@ -125,6 +124,7 @@ class AccountOpeningServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
@@ -185,6 +185,7 @@ class AccountOpeningServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
@@ -248,9 +249,10 @@ class AccountOpeningServiceTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockAuditService->shouldReceive('log')->once();
+
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
@@ -260,12 +262,12 @@ class AccountOpeningServiceTest extends TestCase
             ->once()
             ->andReturn($mockOpening);
 
-        $errorResponse = [
-            'AccountOpeningResponse' => [
-                'ResponseCode' => '01',
-                'ResponseDetails' => ['Account opening failed'],
-            ],
-        ];
+            $errorResponse = [
+                'AccountOpeningResponse' => [
+                    'ResponseCode' => '01',
+                    'ResponseDetails' => ['Account opening failed'],
+                ],
+            ];
 
         $mockClient = Mockery::mock(Client::class);
         $mockResponse = new Response(200, [], json_encode($errorResponse));

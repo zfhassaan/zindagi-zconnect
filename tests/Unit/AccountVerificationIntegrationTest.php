@@ -38,6 +38,7 @@ class AccountVerificationIntegrationTest extends TestCase
 
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
         $mockLoggingService->shouldReceive('logRequest')
             ->once()
             ->with(
@@ -140,6 +141,7 @@ class AccountVerificationIntegrationTest extends TestCase
 
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
         $mockLoggingService->shouldReceive('logRequest')
             ->once()
             ->with(
@@ -242,6 +244,7 @@ class AccountVerificationIntegrationTest extends TestCase
 
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
         $mockLoggingService->shouldReceive('logRequest')
             ->once()
             ->with(
@@ -274,6 +277,7 @@ class AccountVerificationIntegrationTest extends TestCase
                 'ResponseCode' => '00',
                 'AccountStatus' => '1',
                 'ResponseDetails' => ['Account verified successfully'],
+                'IsPinSet' => '00',
             ],
         ];
 
@@ -354,6 +358,7 @@ class AccountVerificationIntegrationTest extends TestCase
 
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logError')->zeroOrMoreTimes();
         $mockLoggingService->shouldReceive('logRequest')
             ->once()
             ->with(
@@ -418,7 +423,7 @@ class AccountVerificationIntegrationTest extends TestCase
             'zindagi-zconnect' => [
                 'api' => ['base_url' => 'https://test.jsbl.com/zconnect'],
                 'auth' => [
-                    'client_id' => config('zindagi-zconnect.auth.client_id'),
+                    'client_id' => 'test_client_id',
                     'organization_id' => '223',
                 ],
                 'modules' => [
