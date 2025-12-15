@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\AccountVerificationRepository;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountVerification;
 
 class AccountVerificationRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected AccountVerificationRepository $repository;
 

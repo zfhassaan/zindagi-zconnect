@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountVerification;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountLinking;
 
-class AccountVerificationModelTest extends TestCase
+class AccountLinkingModelTest extends TestCase
 {
 
     /**
@@ -15,7 +15,7 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_creation_with_all_fields(): void
     {
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -23,18 +23,17 @@ class AccountVerificationModelTest extends TestCase
             'request_data' => ['test' => 'request'],
             'response_data' => ['test' => 'response'],
             'response_code' => '00',
-            'account_status' => '1',
             'account_title' => 'Test Account',
-            'account_type' => 'L0',
-            'is_pin_set' => '0',
+            'account_type' => 'Level0',
+            'otp_pin' => '123456',
             'success' => true,
         ]);
 
-        $this->assertInstanceOf(AccountVerification::class, $verification);
-        $this->assertEquals('000001', $verification->trace_no);
-        $this->assertTrue($verification->success);
-        $this->assertIsArray($verification->request_data);
-        $this->assertIsArray($verification->response_data);
+        $this->assertInstanceOf(AccountLinking::class, $linking);
+        $this->assertEquals('000001', $linking->trace_no);
+        $this->assertTrue($linking->success);
+        $this->assertIsArray($linking->request_data);
+        $this->assertIsArray($linking->response_data);
     }
 
     /**
@@ -43,9 +42,9 @@ class AccountVerificationModelTest extends TestCase
     public function test_model_json_casting(): void
     {
         $requestData = ['cnic' => '1234567890123', 'mobile_no' => '03001234567'];
-        $responseData = ['ResponseCode' => '00', 'AccountStatus' => '1'];
+        $responseData = ['ResponseCode' => '00', 'AccountTitle' => 'Test Account'];
 
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -55,10 +54,10 @@ class AccountVerificationModelTest extends TestCase
             'success' => true,
         ]);
 
-        $this->assertIsArray($verification->request_data);
-        $this->assertEquals('1234567890123', $verification->request_data['cnic']);
-        $this->assertIsArray($verification->response_data);
-        $this->assertEquals('00', $verification->response_data['ResponseCode']);
+        $this->assertIsArray($linking->request_data);
+        $this->assertEquals('1234567890123', $linking->request_data['cnic']);
+        $this->assertIsArray($linking->response_data);
+        $this->assertEquals('00', $linking->response_data['ResponseCode']);
     }
 
     /**
@@ -66,7 +65,7 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_boolean_casting(): void
     {
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -74,13 +73,13 @@ class AccountVerificationModelTest extends TestCase
             'success' => true,
         ]);
 
-        $this->assertIsBool($verification->success);
-        $this->assertTrue($verification->success);
+        $this->assertIsBool($linking->success);
+        $this->assertTrue($linking->success);
 
-        $verification->success = false;
-        $verification->save();
+        $linking->success = false;
+        $linking->save();
 
-        $this->assertFalse($verification->success);
+        $this->assertFalse($linking->success);
     }
 
     /**
@@ -88,7 +87,7 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_datetime_casting(): void
     {
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -96,8 +95,8 @@ class AccountVerificationModelTest extends TestCase
             'success' => true,
         ]);
 
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $verification->created_at);
-        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $verification->updated_at);
+        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $linking->created_at);
+        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $linking->updated_at);
     }
 
     /**
@@ -105,7 +104,7 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_with_null_optional_fields(): void
     {
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -113,17 +112,16 @@ class AccountVerificationModelTest extends TestCase
             'request_data' => null,
             'response_data' => null,
             'response_code' => null,
-            'account_status' => null,
             'account_title' => null,
             'account_type' => null,
-            'is_pin_set' => null,
+            'otp_pin' => null,
             'success' => false,
         ]);
 
-        $this->assertNull($verification->request_data);
-        $this->assertNull($verification->response_data);
-        $this->assertNull($verification->response_code);
-        $this->assertFalse($verification->success);
+        $this->assertNull($linking->request_data);
+        $this->assertNull($linking->response_data);
+        $this->assertNull($linking->response_code);
+        $this->assertFalse($linking->success);
     }
 
     /**
@@ -131,7 +129,7 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_mass_assignment(): void
     {
-        $verification = AccountVerification::create([
+        $linking = AccountLinking::create([
             'trace_no' => '000001',
             'cnic' => '1234567890123',
             'mobile_no' => '03001234567',
@@ -140,7 +138,7 @@ class AccountVerificationModelTest extends TestCase
         ]);
 
         // Should not throw exception for fillable fields
-        $this->assertEquals('000001', $verification->trace_no);
+        $this->assertEquals('000001', $linking->trace_no);
     }
 
     /**
@@ -148,8 +146,8 @@ class AccountVerificationModelTest extends TestCase
      */
     public function test_model_table_name(): void
     {
-        $verification = new AccountVerification();
-        $this->assertEquals('zindagi_zconnect_account_verifications', $verification->getTable());
+        $linking = new AccountLinking();
+        $this->assertEquals('zindagi_zconnect_account_linkings', $linking->getTable());
     }
 }
 

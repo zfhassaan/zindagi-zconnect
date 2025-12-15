@@ -16,8 +16,9 @@ abstract class TestCase extends OrchestraTestCase
     {
         parent::setUp();
 
-        // Load migrations
+        // Load and run migrations
         $this->loadMigrationsFrom(__DIR__ . '/../src/database/migrations');
+        $this->artisan('migrate', ['--database' => 'testbench'])->run();
     }
 
     /**
@@ -58,7 +59,7 @@ abstract class TestCase extends OrchestraTestCase
             ],
             'auth' => [
                 'client_id' => 'test_client_id',
-                 'client_secret' => config('zindagi-zconnect'.auth.client_secret'),
+                'client_secret' => 'test_client_secret',
                 'api_key' => 'test_api_key',
                 'token_cache_ttl' => 3600,
             ],
@@ -83,6 +84,13 @@ abstract class TestCase extends OrchestraTestCase
                         'merchant_type' => '0088',
                         'company_name' => 'NOVA',
                         'transaction_type' => '02',
+                    ],
+                    'account_linking' => [
+                        'endpoint' => '/api/v2/linkacc-blb',
+                        'merchant_type' => '0088',
+                        'company_name' => 'NOVA',
+                        'transaction_type' => '01',
+                        'reserved1' => '02',
                     ],
                 ],
             ],

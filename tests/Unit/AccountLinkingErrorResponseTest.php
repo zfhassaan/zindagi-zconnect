@@ -11,16 +11,15 @@ use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\OnboardingService;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuditServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\OnboardingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountVerificationRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountVerification;
 
-class AccountVerificationErrorResponseTest extends TestCase
+class AccountLinkingErrorResponseTest extends TestCase
 {
     protected function tearDown(): void
     {
@@ -102,7 +101,7 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(\zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface::class);
+        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
 
         $errorResponse = [
             'messages' => $errorMessage,
@@ -127,8 +126,8 @@ class AccountVerificationErrorResponseTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -148,18 +147,18 @@ class AccountVerificationErrorResponseTest extends TestCase
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
+        $property = $reflection->getProperty('accountLinkingClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountVerificationRequestDTO(
+        $dto = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000009',
+            traceNo: '000001',
             dateTime: '20210105201527'
         );
 
-        $response = $service->verifyAccount($dto);
+        $response = $service->linkAccount($dto);
 
         $this->assertFalse($response->success);
         $this->assertEquals($errorMessage, $response->message);
@@ -167,9 +166,9 @@ class AccountVerificationErrorResponseTest extends TestCase
     }
 
     /**
-     * Test response with missing VerifyAccLinkAccResponse key.
+     * Test response with missing LinkAccountResponse key.
      */
-    public function test_response_missing_verify_response_key(): void
+    public function test_response_missing_link_response_key(): void
     {
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockAuthService->shouldReceive('authenticate')
@@ -180,16 +179,17 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockLoggingService->shouldReceive('logInfo')->once();
         $mockLoggingService->shouldReceive('logRequest')->once();
         $mockLoggingService->shouldReceive('logResponse')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
-        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
-        $mockVerification = new AccountVerification();
-        $mockAccountVerificationRepo->shouldReceive('create')
+        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockLinking = new \zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountLinking();
+        $mockAccountLinkingRepo->shouldReceive('create')
             ->once()
-            ->andReturn($mockVerification);
+            ->andReturn($mockLinking);
 
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
-        $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+        $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
 
         $invalidResponse = [
             'SomeOtherKey' => [
@@ -212,8 +212,8 @@ class AccountVerificationErrorResponseTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -229,22 +229,22 @@ class AccountVerificationErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $mockAccountLinkingRepo
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
+        $property = $reflection->getProperty('accountLinkingClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountVerificationRequestDTO(
+        $dto = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000009',
+            traceNo: '000001',
             dateTime: '20210105201527'
         );
 
-        $response = $service->verifyAccount($dto);
+        $response = $service->linkAccount($dto);
 
         $this->assertFalse($response->success);
         $this->assertEquals('Unknown error', $response->message);
@@ -286,8 +286,8 @@ class AccountVerificationErrorResponseTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -303,25 +303,25 @@ class AccountVerificationErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $mockAccountLinkingRepo
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
+        $property = $reflection->getProperty('accountLinkingClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountVerificationRequestDTO(
+        $dto = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000009',
+            traceNo: '000001',
             dateTime: '20210105201527'
         );
 
-        $response = $service->verifyAccount($dto);
+        $response = $service->linkAccount($dto);
 
         $this->assertFalse($response->success);
-        $this->assertStringContainsString('Account verification failed', $response->message);
+        $this->assertStringContainsString('Account linking failed', $response->message);
     }
 
     /**
@@ -360,8 +360,8 @@ class AccountVerificationErrorResponseTest extends TestCase
                 ],
                 'modules' => [
                     'onboarding' => [
-                        'account_verification' => [
-                            'endpoint' => '/api/v2/verifyacclinkacc-blb',
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
                         ],
                         'timeout' => 60,
                     ],
@@ -377,25 +377,25 @@ class AccountVerificationErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $mockAccountLinkingRepo
         );
 
         $reflection = new \ReflectionClass($service);
-        $property = $reflection->getProperty('accountVerificationClient');
+        $property = $reflection->getProperty('accountLinkingClient');
         $property->setAccessible(true);
         $property->setValue($service, $mockClient);
 
-        $dto = new AccountVerificationRequestDTO(
+        $dto = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '03001234567',
-            traceNo: '000009',
+            traceNo: '000001',
             dateTime: '20210105201527'
         );
 
-        $response = $service->verifyAccount($dto);
+        $response = $service->linkAccount($dto);
 
         $this->assertFalse($response->success);
-        $this->assertStringContainsString('Account verification failed', $response->message);
+        $this->assertStringContainsString('Account linking failed', $response->message);
     }
 
     /**
@@ -413,6 +413,25 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
 
+        config([
+            'zindagi-zconnect' => [
+                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
+                'auth' => [
+                    'client_id' => config('zindagi-zconnect.auth.client_id'),
+                    'organization_id' => '223',
+                ],
+                'modules' => [
+                    'onboarding' => [
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
+                        ],
+                        'timeout' => 60,
+                    ],
+                ],
+                'security' => ['verify_ssl' => true],
+            ],
+        ]);
+
         $service = new OnboardingService(
             Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
             $mockAuthService,
@@ -420,23 +439,23 @@ class AccountVerificationErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $mockAccountLinkingRepo
         );
 
         // Test with 12 characters (one less)
-        $dto1 = new AccountVerificationRequestDTO(
+        $dto1 = new AccountLinkingRequestDTO(
             cnic: '123456789012', // 12 chars
             mobileNo: '03001234567'
         );
-        $response1 = $service->verifyAccount($dto1);
+        $response1 = $service->linkAccount($dto1);
         $this->assertFalse($response1->success);
 
         // Test with 14 characters (one more)
-        $dto2 = new AccountVerificationRequestDTO(
+        $dto2 = new AccountLinkingRequestDTO(
             cnic: '12345678901234', // 14 chars
             mobileNo: '03001234567'
         );
-        $response2 = $service->verifyAccount($dto2);
+        $response2 = $service->linkAccount($dto2);
         $this->assertFalse($response2->success);
     }
 
@@ -448,12 +467,31 @@ class AccountVerificationErrorResponseTest extends TestCase
         $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
         $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
         $mockLoggingService->shouldReceive('logInfo')->once();
-        $mockLoggingService->shouldReceive('logError')->once();
+        $mockLoggingService->shouldReceive('logError')->twice();
 
         $mockAuditService = Mockery::mock(AuditServiceInterface::class);
         $mockOnboardingRepo = Mockery::mock(OnboardingRepositoryInterface::class);
         $mockAccountVerificationRepo = Mockery::mock(AccountVerificationRepositoryInterface::class);
         $mockAccountLinkingRepo = Mockery::mock(AccountLinkingRepositoryInterface::class);
+
+        config([
+            'zindagi-zconnect' => [
+                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
+                'auth' => [
+                    'client_id' => config('zindagi-zconnect.auth.client_id'),
+                    'organization_id' => '223',
+                ],
+                'modules' => [
+                    'onboarding' => [
+                        'account_linking' => [
+                            'endpoint' => '/api/v2/linkacc-blb',
+                        ],
+                        'timeout' => 60,
+                    ],
+                ],
+                'security' => ['verify_ssl' => true],
+            ],
+        ]);
 
         $service = new OnboardingService(
             Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
@@ -462,23 +500,23 @@ class AccountVerificationErrorResponseTest extends TestCase
             $mockAuditService,
             $mockOnboardingRepo,
             $mockAccountVerificationRepo,
-            Mockery::mock(AccountLinkingRepositoryInterface::class)
+            $mockAccountLinkingRepo
         );
 
         // Test with 10 characters (one less)
-        $dto1 = new AccountVerificationRequestDTO(
+        $dto1 = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '0300123456' // 10 chars
         );
-        $response1 = $service->verifyAccount($dto1);
+        $response1 = $service->linkAccount($dto1);
         $this->assertFalse($response1->success);
 
         // Test with 12 characters (one more)
-        $dto2 = new AccountVerificationRequestDTO(
+        $dto2 = new AccountLinkingRequestDTO(
             cnic: '1234567890123',
             mobileNo: '030012345678' // 12 chars
         );
-        $response2 = $service->verifyAccount($dto2);
+        $response2 = $service->linkAccount($dto2);
         $this->assertFalse($response2->success);
     }
 }

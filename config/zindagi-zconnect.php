@@ -110,6 +110,13 @@ return [
                 'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
                 'transaction_type' => env('ZINDAGI_ZCONNECT_TRANSACTION_TYPE', '02'),
             ],
+            'account_linking' => [
+                'endpoint' => '/api/v2/linkacc-blb',
+                'merchant_type' => env('ZINDAGI_ZCONNECT_MERCHANT_TYPE', '0088'),
+                'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
+                'transaction_type' => env('ZINDAGI_ZCONNECT_ACCOUNT_LINKING_TRANSACTION_TYPE', '01'),
+                'reserved1' => env('ZINDAGI_ZCONNECT_ACCOUNT_LINKING_RESERVED1', '02'),
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

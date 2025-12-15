@@ -8,6 +8,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -52,5 +54,13 @@ interface OnboardingServiceInterface
      * @return AccountVerificationResponseDTO
      */
     public function verifyAccount(AccountVerificationRequestDTO $dto): AccountVerificationResponseDTO;
+
+    /**
+     * Link account with CNIC and mobile number.
+     *
+     * @param AccountLinkingRequestDTO $dto
+     * @return AccountLinkingResponseDTO
+     */
+    public function linkAccount(AccountLinkingRequestDTO $dto): AccountLinkingResponseDTO;
 }
 

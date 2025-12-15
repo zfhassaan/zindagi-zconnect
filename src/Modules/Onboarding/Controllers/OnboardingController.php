@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\Contracts\OnboardingServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingRequestDTO;
 
 class OnboardingController
 {
@@ -100,6 +101,29 @@ class OnboardingController
 
         $dto = AccountVerificationRequestDTO::fromArray($request->all());
         $response = $this->onboardingService->verifyAccount($dto);
+
+        return response()->json($response->toArray(), $response->success ? 200 : 400);
+    }
+
+    /**
+     * Link account with CNIC and mobile number.
+     */
+    public function linkAccount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'cnic' => 'required|string|size:13',
+            'mobile_no' => 'required|string|size:11',
+            'merchant_type' => 'nullable|string|size:4',
+            'trace_no' => 'nullable|string|size:6',
+            'date_time' => 'nullable|string|size:14',
+            'company_name' => 'nullable|string|size:4',
+            'transaction_type' => 'nullable|string|size:2',
+            'reserved1' => 'nullable|string|size:2',
+            'otp_pin' => 'nullable|string',
+        ]);
+
+        $dto = AccountLinkingRequestDTO::fromArray($request->all());
+        $response = $this->onboardingService->linkAccount($dto);
 
         return response()->json($response->toArray(), $response->success ? 200 : 400);
     }

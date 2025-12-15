@@ -51,6 +51,12 @@ class ValidationHelper
     {
         $mobile = preg_replace('/[\s\-+]/', '', $mobile);
         
+        // Handle 11-digit numbers starting with 03 (03001234567 -> +923001234567)
+        if (strlen($mobile) === 11 && str_starts_with($mobile, '03')) {
+            return '+92' . substr($mobile, 1);
+        }
+        
+        // Handle 10-digit numbers starting with 03 (0300123456 -> +92300123456)
         if (strlen($mobile) === 10 && str_starts_with($mobile, '03')) {
             return '+92' . substr($mobile, 1);
         }

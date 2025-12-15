@@ -15,6 +15,7 @@ use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuditServiceInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\OnboardingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountVerificationRepositoryInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\Repositories\Contracts\AccountLinkingRepositoryInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountVerification;
 
 class AccountVerificationIntegrationTest extends TestCase
@@ -104,7 +105,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockLoggingService,
             $mockAuditService,
             $mockOnboardingRepo,
-            $mockAccountVerificationRepo
+            $mockAccountVerificationRepo,
+            Mockery::mock(AccountLinkingRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -119,7 +121,10 @@ class AccountVerificationIntegrationTest extends TestCase
             dateTime: '20210105201527'
         );
 
-        $service->verifyAccount($dto);
+        $response = $service->verifyAccount($dto);
+        
+        $this->assertInstanceOf(\zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO::class, $response);
+        $this->assertTrue($response->success);
     }
 
     /**
@@ -201,7 +206,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockLoggingService,
             $mockAuditService,
             $mockOnboardingRepo,
-            $mockAccountVerificationRepo
+            $mockAccountVerificationRepo,
+            Mockery::mock(AccountLinkingRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -216,7 +222,10 @@ class AccountVerificationIntegrationTest extends TestCase
             dateTime: '20210105201527'
         );
 
-        $service->verifyAccount($dto);
+        $response = $service->verifyAccount($dto);
+        
+        $this->assertInstanceOf(\zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO::class, $response);
+        $this->assertTrue($response->success);
     }
 
     /**
@@ -306,7 +315,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockLoggingService,
             $mockAuditService,
             $mockOnboardingRepo,
-            $mockAccountVerificationRepo
+            $mockAccountVerificationRepo,
+            Mockery::mock(AccountLinkingRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
@@ -321,7 +331,10 @@ class AccountVerificationIntegrationTest extends TestCase
             dateTime: '20210105201527'
         );
 
-        $service->verifyAccount($dto);
+        $response = $service->verifyAccount($dto);
+        
+        $this->assertInstanceOf(\zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationResponseDTO::class, $response);
+        $this->assertTrue($response->success);
     }
 
     /**
@@ -421,7 +434,8 @@ class AccountVerificationIntegrationTest extends TestCase
             $mockLoggingService,
             $mockAuditService,
             $mockOnboardingRepo,
-            $mockAccountVerificationRepo
+            $mockAccountVerificationRepo,
+            Mockery::mock(AccountLinkingRepositoryInterface::class)
         );
 
         $reflection = new \ReflectionClass($service);
