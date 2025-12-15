@@ -134,6 +134,9 @@ return [
                 'merchant_type' => env('ZINDAGI_ZCONNECT_MERCHANT_TYPE', '0088'),
                 'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
             ],
+            'l2_account_fields' => [
+                'endpoint' => '/api/v1/l2Account/l2AccountFields',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

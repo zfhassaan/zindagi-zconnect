@@ -17,6 +17,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1RequestDTO
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountOpeningL1ResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountFieldsResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -50,6 +52,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $accountOpeningL1Endpoint;
     protected Client $accountUpgradeClient;
     protected string $accountUpgradeEndpoint;
+    protected Client $l2AccountFieldsClient;
+    protected string $l2AccountFieldsEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -127,6 +131,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->accountUpgradeEndpoint = $accountUpgradeConfig['endpoint'] ?? '/api/v2/upgradeaccount';
         
         $this->accountUpgradeClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup L2 account fields client
+        $l2AccountFieldsConfig = $config['modules']['onboarding']['l2_account_fields'] ?? [];
+        $this->l2AccountFieldsEndpoint = $l2AccountFieldsConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountFields';
+        
+        $this->l2AccountFieldsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1122,6 +1140,115 @@ class OnboardingService implements OnboardingServiceInterface
          // DTO does most validation
          if (empty($dto->fingerTemplate)) {
              throw new \InvalidArgumentException('Finger template cannot be empty');
+        }
+    }
+
+    /**
+     * Get L2 account fields.
+     */
+    public function getL2AccountFields(L2AccountFieldsRequestDTO $dto): L2AccountFieldsResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting L2 account fields', [
+                'mobile_number' => $dto->mobileNumber,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->l2AccountFieldsEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->l2AccountFieldsClient->post($this->l2AccountFieldsEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from L2 account fields API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new L2AccountFieldsResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Get L2 account fields failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->l2AccountFieldsEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            return L2AccountFieldsResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get L2 account fields',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new L2AccountFieldsResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account fields',
+                );
+            }
+            
+            return new L2AccountFieldsResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 account fields: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Get L2 account fields error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                ],
+                $e
+            );
+
+            return new L2AccountFieldsResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to get L2 account fields: ' . $e->getMessage(),
+            );
         }
     }
 
