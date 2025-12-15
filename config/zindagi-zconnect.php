@@ -141,7 +141,7 @@ return [
                 'endpoint' => '/api/v1/updatePmdAndKyc',
             ],
             'get_l2_discrepant_data' => [
-                'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
+                'endpoint' => '/api/v1/l2AccountUpgradeDiscrepant',
             ],
             'get_l2_accounts' => [
                 'endpoint' => '/api/v1/level2Accounts',

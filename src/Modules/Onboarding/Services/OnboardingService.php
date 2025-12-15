@@ -25,6 +25,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2DiscrepantResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\GetL2AccountsResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeDiscrepantResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -66,6 +68,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $getL2DiscrepantEndpoint;
     protected Client $getL2AccountsClient;
     protected string $getL2AccountsEndpoint;
+    protected Client $l2AccountUpgradeDiscrepantClient;
+    protected string $l2AccountUpgradeDiscrepantEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -199,6 +203,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->getL2AccountsEndpoint = $getL2AccountsConfig['endpoint'] ?? '/api/v1/getL2Accounts';
         
         $this->getL2AccountsClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+        
+        // Setup L2 Account Upgrade Discrepant client
+        $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
+        $this->l2AccountUpgradeDiscrepantEndpoint = $l2AccountUpgradeDiscrepantConfig['endpoint'] ?? '/api/v1/l2AccountUpgradeDiscrepant';
+        
+        $this->l2AccountUpgradeDiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -1638,6 +1656,127 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to get L2 accounts: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Submit L2 account upgrade discrepant data.
+     */
+    public function submitL2AccountUpgradeDiscrepant(L2AccountUpgradeDiscrepantRequestDTO $dto): L2AccountUpgradeDiscrepantResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Submitting L2 account upgrade discrepant data', [
+                'mobile_number' => $dto->mobileNumber,
+                'cnic' => $dto->cnic,
+                'rrn' => $dto->rrn,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->l2AccountUpgradeDiscrepantEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->l2AccountUpgradeDiscrepantClient->post($this->l2AccountUpgradeDiscrepantEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from L2 Account Upgrade Discrepant API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new L2AccountUpgradeDiscrepantResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'L2 Account Upgrade Discrepant failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->l2AccountUpgradeDiscrepantEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            // Audit log
+            $this->auditService->log(
+                'l2_account_upgrade_discrepant',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return L2AccountUpgradeDiscrepantResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to submit L2 account upgrade discrepant data',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'cnic' => $dto->cnic,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new L2AccountUpgradeDiscrepantResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to submit L2 account upgrade discrepant data',
+                );
+            }
+            
+            return new L2AccountUpgradeDiscrepantResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to submit L2 account upgrade discrepant data: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'L2 Account Upgrade Discrepant error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'cnic' => $dto->cnic,
+                ],
+                $e
+            );
+
+            return new L2AccountUpgradeDiscrepantResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to submit L2 account upgrade discrepant data: ' . $e->getMessage(),
             );
         }
     }
