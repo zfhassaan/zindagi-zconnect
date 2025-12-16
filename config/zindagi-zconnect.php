@@ -141,7 +141,10 @@ return [
                 'endpoint' => '/api/v1/updatePmdAndKyc',
             ],
             'minor_account_opening' => [
-                 'endpoint' => '/api/v1/M0AccountOpening', // Verified via browser
+                 'endpoint' => '/api/v1/M0AccountOpening',
+            ],
+            'minor_account_verification' => [
+                 'endpoint' => '/api/v1/M0AccountVerification',
             ],
             'get_l2_discrepant_data' => [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
