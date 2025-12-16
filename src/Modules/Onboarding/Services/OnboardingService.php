@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace zfhassaan\ZindagiZconnect\Modules\Onboarding\Services;
 
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\Contracts\OnboardingServiceInterface;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
@@ -56,6 +58,8 @@ use Illuminate\Support\Facades\Event;
 class OnboardingService implements OnboardingServiceInterface
 {
     protected string $endpoint;
+    protected Client $minorAccountOpeningClient;
+    protected string $minorAccountOpeningEndpoint;
     protected Client $accountVerificationClient;
     protected string $accountVerificationEndpoint;
     protected Client $accountLinkingClient;
@@ -225,7 +229,7 @@ class OnboardingService implements OnboardingServiceInterface
         ]);
         
         // Setup L2 Account Upgrade Discrepant client
-        $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
+        $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['l2_account_upgrade_discrepant'] ?? [];
         $this->l2AccountUpgradeDiscrepantEndpoint = $l2AccountUpgradeDiscrepantConfig['endpoint'] ?? '/api/v1/l2AccountUpgradeDiscrepant';
         
         $this->l2AccountUpgradeDiscrepantClient = new Client([
@@ -271,6 +275,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->accountInfoEndpoint = $accountInfoConfig['endpoint'] ?? '/api/v1/accountInfo';
         
         $this->accountInfoClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        // Setup Minor Account Opening client
+        $minorAccountOpeningConfig = $config['modules']['onboarding']['minor_account_opening'] ?? [];
+        $this->minorAccountOpeningEndpoint = $minorAccountOpeningConfig['endpoint'] ?? '/api/v1/M0AccountOpening';
+        
+        $this->minorAccountOpeningClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -2281,6 +2299,125 @@ class OnboardingService implements OnboardingServiceInterface
 
         if (empty($dto->dateOfBirth)) {
             throw new \InvalidArgumentException('Date of birth is required');
+        }
+    }
+    /**
+     * Open minor account.
+     */
+    public function minorAccountOpening(MinorAccountOpeningRequestDTO $dto): MinorAccountOpeningResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating minor account opening', [
+                'rrn' => $dto->rrn,
+                'cnic' => $dto->cnic,
+                'mobile_number' => $dto->mobileNumber,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->minorAccountOpeningEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->minorAccountOpeningClient->post($this->minorAccountOpeningEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Minor Account Opening API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new MinorAccountOpeningResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Minor Account Opening failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->minorAccountOpeningEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            // Audit log
+            $this->auditService->log(
+                'minor_account_opening',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return MinorAccountOpeningResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to open minor account',
+                [
+                    'rrn' => $dto->rrn,
+                    'cnic' => $dto->cnic,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new MinorAccountOpeningResponseDTO(
+                    success: false,
+                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
+                    responseDescription: $errorResponse['messages'] ?? 'Failed to open minor account',
+                    originalResponse: $errorResponse
+                );
+            }
+            
+            return new MinorAccountOpeningResponseDTO(
+                success: false,
+                responseCode: (string) $e->getCode(),
+                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Minor Account Opening error',
+                [
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            return new MinorAccountOpeningResponseDTO(
+                success: false,
+                responseCode: (string) $e->getCode(),
+                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
+            );
         }
     }
 }
