@@ -36,6 +36,9 @@ class ZindagiZconnectServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Load migrations (needed for both console and testing)
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
         if ($this->app->runningInConsole()) {
             // Publish config file
             $this->publishes([
@@ -46,9 +49,6 @@ class ZindagiZconnectServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations' => database_path('migrations'),
             ], 'zindagi-zconnect-migrations');
-
-            // Load migrations
-            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
 
         $this->configureLogging();

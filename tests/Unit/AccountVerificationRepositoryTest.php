@@ -93,8 +93,10 @@ class AccountVerificationRepositoryTest extends TestCase
             'mobile_no' => '03001234567',
             'merchant_type' => '0088',
             'success' => true,
-            'created_at' => now()->subDay(),
         ]);
+
+        // Sleep for 1 second to ensure different timestamps
+        sleep(1);
 
         AccountVerification::create([
             'trace_no' => '000002',
@@ -102,7 +104,6 @@ class AccountVerificationRepositoryTest extends TestCase
             'mobile_no' => '03001234568',
             'merchant_type' => '0088',
             'success' => true,
-            'created_at' => now(),
         ]);
 
         $verification = $this->repository->findByCnic('1234567890123');
