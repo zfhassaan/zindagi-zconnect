@@ -52,10 +52,6 @@ abstract class TestCase extends OrchestraTestCase
             'database' => ':memory:',
             'prefix' => '',
         ]);
-        // Ensure package migrations are picked up by test runner
-        $app['config']->set('database.migrations', [
-            __DIR__ . '/../src/database/migrations',
-        ]);
 
         // Setup zindagi-zconnect config
         $app['config']->set('zindagi-zconnect', [
