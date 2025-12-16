@@ -1,19 +1,65 @@
-# Zindagi Z-Connect for JS Bank
+<p align="center">
+    <img src="./zindigi.jpg" alt="Zindagi Z-Connect Logo">
+</p>
 
-A comprehensive Laravel package for integrating with JS Bank's Zindagi Z-Connect API. This package provides scalable, secure, auditable solutions for banking operations.
+<h1 align="center">Zindagi Z-Connect Laravel SDK</h1>
+
+<p align="center">
+    <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
+        <img src="https://img.shields.io/packagist/v/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="Latest Version">
+    </a>
+    <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
+        <img src="https://img.shields.io/packagist/dt/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="Total Downloads">
+    </a>
+    <a href="https://github.com/zfhassaan/zindagi-zconnect/actions/workflows/tests.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/zfhassaan/zindagi-zconnect/tests.yml?branch=main&style=flat-square" alt="Build Status">
+    </a>
+    <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
+        <img src="https://img.shields.io/packagist/php-v/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="PHP Version">
+    </a>
+    <a href="https://github.com/zfhassaan/zindagi-zconnect/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/zfhassaan/zindagi-zconnect?style=flat-square" alt="License">
+    </a>
+</p>
+
+<p align="center">
+    A clean, fully-typed Laravel package to integrate with <strong>JS Bank's Z-Connect API</strong> — the official fintech API platform for <strong>Zindigi digital banking services</strong>.
+</p>
+
+---
+
+## Disclaimer
+
+This is an **unofficial** Laravel package for integrating with **JS Bank's Z-Connect (Zindigi) API**.
+
+This repository is **not owned, maintained, or endorsed by JS Bank or Zindigi**. All trademarks, logos, APIs, and systems belong to their respective owners.
+
+This package is provided **solely to assist developers** in streamlining the integration process with the official Z-Connect APIs.  
+For authoritative documentation, credentials, and production usage, refer to the official JS Bank developer portal:  
+ https://developer.jsbl.com
+
+---
 
 ## Features
 
-- **Onboarding Solution** - Complete customer onboarding workflow with account verification
-- **Inquiry Solution** - Account and transaction inquiries (Coming Soon)
-- **Payment Solution** - Payment processing and management (Coming Soon)
-- **Lending Solution** - Loan application and management (Coming Soon)
+- **Onboarding Solution** — Complete customer onboarding workflow with verification
+- **Account Verification** — CNIC & mobile-based account checks
+- **Account Statement V2 / Digi Wallet Statement**
+- **Audit Trail & Logging**
+- **DTO-driven request/response validation**
+- **Modular & extensible architecture**
+
+> Inquiry, Payment, and Lending modules are planned.
+
+---
 
 ## Requirements
 
 - PHP >= 8.1
-- Laravel >= 10.0
+- Laravel >= 10
 - Guzzle HTTP Client
+
+---
 
 ## Installation
 
@@ -21,15 +67,17 @@ A comprehensive Laravel package for integrating with JS Bank's Zindagi Z-Connect
 composer require zfhassaan/zindagi-zconnect
 ```
 
+---
+
 ## Configuration
 
-1. Publish the configuration file:
+### Publish config
 
 ```bash
 php artisan vendor:publish --tag=zindagi-zconnect-config
 ```
 
-2. Add your credentials to `.env`:
+### Environment variables
 
 ```env
 ZINDAGI_ZCONNECT_BASE_URL=https://api.jsbank.com/zconnect
@@ -41,24 +89,23 @@ ZINDAGI_ZCONNECT_MERCHANT_TYPE=0088
 ZINDAGI_ZCONNECT_COMPANY_NAME=NOVA
 ```
 
-3. Publish and run migrations:
+### (Optional) Migrations
 
 ```bash
 php artisan vendor:publish --tag=zindagi-zconnect-migrations
 php artisan migrate
 ```
 
+---
+
 ## Usage
 
-### Onboarding Solution
-
-#### Using Facade
+### Onboarding (Facade)
 
 ```php
 use zfhassaan\ZindagiZconnect\Facades\ZindagiZconnect;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 
-// Create onboarding request DTO
 $dto = OnboardingRequestDTO::fromArray([
     'cnic' => '1234567890123',
     'full_name' => 'John Doe',
@@ -70,220 +117,107 @@ $dto = OnboardingRequestDTO::fromArray([
     'country' => 'Pakistan',
 ]);
 
-// Initiate onboarding
 $response = ZindagiZconnect::onboarding()->initiate($dto);
-
-if ($response->success) {
-    $referenceId = $response->referenceId;
-    // Process success
-}
-
-// Verify customer
-$verifyResponse = ZindagiZconnect::onboarding()->verify($referenceId, [
-    'verification_code' => '123456',
-    'otp' => '654321',
-]);
-
-// Get status
-$statusResponse = ZindagiZconnect::onboarding()->getStatus($referenceId);
-
-// Complete onboarding
-$completeResponse = ZindagiZconnect::onboarding()->complete($referenceId, [
-    'account_number' => '1234567890',
-]);
 ```
 
-### Account Verification (Part of Onboarding)
+---
 
-#### Verify Account Link
+## Events
 
-```php
-use zfhassaan\ZindagiZconnect\Facades\ZindagiZconnect;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
+The package emits domain events:
 
-// Create account verification request
-$dto = AccountVerificationRequestDTO::fromArray([
-    'cnic' => '1234567890123',
-    'mobile_no' => '03001234567',
-    // Optional - defaults from config:
-    // 'merchant_type' => '0088',
-    // 'trace_no' => '000009', // Auto-generated if not provided
-    // 'date_time' => '20210105201527', // Auto-generated if not provided
-    // 'company_name' => 'NOVA',
-    // 'reserved1' => '01',
-    // 'reserved2' => '01',
-    // 'transaction_type' => '02',
-]);
-
-// Verify account
-$response = ZindagiZconnect::onboarding()->verifyAccount($dto);
-
-if ($response->success && $response->accountExists()) {
-    echo "Account exists: " . $response->accountTitle;
-    echo "Account Type: " . $response->accountType;
-    echo "PIN Set: " . ($response->isPinSet() ? 'Yes' : 'No');
-} else {
-    echo "Error: " . $response->message;
-}
-```
-
-#### Account Verification Events
+- `OnboardingInitiated`
+- `OnboardingVerified`
+- `OnboardingCompleted`
+- `AccountVerified`
 
 ```php
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\AccountVerified;
-
 Event::listen(AccountVerified::class, function ($event) {
-    // Handle account verification
     Log::info('Account verified', [
         'trace_no' => $event->verification->trace_no,
-        'account_status' => $event->response->accountStatus,
     ]);
 });
 ```
 
-#### Using Dependency Injection
+---
+
+## Validation Helpers
 
 ```php
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\Contracts\OnboardingServiceInterface;
-
-class YourController
-{
-    public function __construct(
-        protected OnboardingServiceInterface $onboardingService
-    ) {
-    }
-
-    public function onboard(Request $request)
-    {
-        $dto = OnboardingRequestDTO::fromArray($request->all());
-        $response = $this->onboardingService->initiate($dto);
-        
-        return response()->json($response->toArray());
-    }
-}
+ValidationHelper::validateCnic('1234567890123');
+ValidationHelper::validateMobileNumber('03001234567');
 ```
 
-### Events
+---
 
-The package fires events for onboarding actions:
+## Audit Trail
 
 ```php
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingInitiated;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingVerified;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\Events\OnboardingCompleted;
-
-Event::listen(OnboardingInitiated::class, function ($event) {
-    // Handle onboarding initiated
-    Log::info('Onboarding initiated', [
-        'reference_id' => $event->onboarding->reference_id,
-    ]);
-});
+$logs = ZindagiZconnect::audit()->getLogs(
+    ['module' => 'onboarding'],
+    limit: 50
+);
 ```
 
-### Validation Helpers
+---
 
-```php
-use zfhassaan\ZindagiZconnect\Helpers\ValidationHelper;
+## Security
 
-// Validate CNIC
-if (ValidationHelper::validateCnic('1234567890123')) {
-    $formatted = ValidationHelper::formatCnic('1234567890123');
-    // Output: 12345-6789012-3
-}
+- Encrypted API communication
+- Sensitive data masking
+- Request & response validation
+- Centralized credential handling
+- Optional signature verification
 
-// Validate mobile number
-if (ValidationHelper::validateMobileNumber('03001234567')) {
-    $formatted = ValidationHelper::formatMobileNumber('03001234567');
-    // Output: +923001234567
-}
-```
-
-### Audit Trail
-
-All actions are automatically logged to the audit trail:
-
-```php
-use zfhassaan\ZindagiZconnect\Facades\ZindagiZconnect;
-
-// Get audit logs
-$logs = ZindagiZconnect::audit()->getLogs([
-    'module' => 'onboarding',
-    'action' => 'onboarding_initiated',
-], limit: 50);
-```
-
-## Security Features
-
-- Encrypted API communications
-- Request/Response validation
-- Comprehensive audit trail logging
-- Secure credential management
-- Sensitive data masking in logs
-- Request signature validation (optional)
-- API key validation (optional)
-
-## Logging
-
-The package provides comprehensive logging:
-
-```php
-use zfhassaan\ZindagiZconnect\Facades\ZindagiZconnect;
-
-// Log custom messages
-ZindagiZconnect::logger()->logInfo('Custom message', ['data' => 'value']);
-ZindagiZconnect::logger()->logError('Error occurred', ['error' => 'details']);
-```
-
-All API requests and responses are automatically logged (with sensitive data masked by default).
+---
 
 ## Architecture
-
-The package follows a modular architecture:
 
 ```
 src/
 ├── Modules/
-│   ├── Onboarding/          Implemented
-│   │   ├── Controllers/
-│   │   ├── DTOs/
-│   │   ├── Events/
-│   │   ├── Models/
-│   │   ├── Repositories/
-│   │   └── Services/
-│   ├── Inquiry/             Coming Soon
-│   ├── Payment/             Coming Soon
-│   └── Lending/             Coming Soon
-├── Services/                 Core services (Auth, HTTP, Logging, Audit)
-├── Repositories/             Data access layer
-├── Models/                   Eloquent models
-├── Middleware/               Security middleware
-├── Helpers/                  Utility helpers
-└── Exceptions/               Custom exceptions
+│   ├── Onboarding/
+│   ├── Inquiry/        (Planned)
+│   ├── Payment/        (Planned)
+│   └── Lending/        (Planned)
+├── Services/
+├── DTOs/
+├── Events/
+├── Helpers/
+└── Exceptions/
 ```
+
+---
 
 ## Testing
 
-Run the test suite:
-
 ```bash
 composer test
-```
-
-Or with PHPUnit:
-
-```bash
+# or
 vendor/bin/phpunit
 ```
 
-## Contributing
-
-Contributions are welcome! Please read the contributing guidelines before submitting pull requests.
+---
 
 ## License
 
 MIT
 
+---
+
 ## Support
 
-For issues and questions, please open an issue on GitHub.
+For bugs or feature requests, please open an issue on [GitHub](https://github.com/zfhassaan/zindagi-zconnect/issues).
 
+---
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## Credits
+
+- [Hassaan Ali](https://github.com/zfhassaan)
+- [All Contributors](../../contributors)
