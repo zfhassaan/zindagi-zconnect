@@ -1,0 +1,70 @@
+PHPUnit 11.5.46 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.14
+Configuration: E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\phpunit.xml
+
+[31;1mE[0m                                                                   1 / 1 (100%)
+
+Time: 00:01.004, Memory: 38.00 MB
+
+[4mAccount Statement V2Service (Tests\Unit\AccountStatementV2Service)[0m
+[33m ✘ [0mSuccessful account statement v2 fetch
+   [33m┐[0m
+   [33m├[0m [43;30mErrorException: Undefined property: stdClass::$migration[0m
+   [33m│[0m
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Foundation\Bootstrap\HandleExceptions.php:258
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php:3504
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Query\Builder.php:3465
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Migrations\DatabaseMigrationRepository.php:52
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Migrations\Migrator.php:763
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Console\Migrations\MigrateCommand.php:152
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Console\Migrations\MigrateCommand.php:110
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Migrations\Migrator.php:666
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Console\Migrations\MigrateCommand.php:109
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Console\Migrations\MigrateCommand.php:88
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:36
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\Util.php:43
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:96
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:35
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\Container.php:799
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Command.php:211
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\symfony\console\Command\Command.php:341
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Command.php:180
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Concerns\CallsCommands.php:68
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Concerns\CallsCommands.php:29
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Database\Console\Migrations\FreshCommand.php:81
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:36
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\Util.php:43
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:96
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\BoundMethod.php:35
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Container\Container.php:799
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Command.php:211
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\symfony\console\Command\Command.php:341
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Command.php:180
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\symfony\console\Application.php:1079
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\symfony\console\Application.php:356
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\symfony\console\Application.php:195
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Console\Application.php:165
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Foundation\Console\Kernel.php:437
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Testing\PendingCommand.php:451
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Testing\PendingCommand.php:675
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Foundation\Testing\Concerns\InteractsWithConsole.php:87
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Foundation\Testing\DatabaseMigrations.php:37
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Foundation\Testing\DatabaseMigrations.php:20
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\Testing.php:124
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\HandlesDatabases.php:62
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\Testing.php:118
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\TestCase.php:71
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\Testing.php:44
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\ApplicationTestingHooks.php:89
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\Testing.php:43
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Collections\helpers.php:266
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\sidekick\src\functions.php:91
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\laravel\framework\src\Illuminate\Collections\helpers.php:266
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\Concerns\Testing.php:57
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\vendor\orchestra\testbench-core\src\TestCase.php:50
+   [33m│[0m E:\laragon\www\pkg\packages\zfhassaan\zindagi-zconnect\tests\TestCase.php:20
+   [33m┴[0m
+
+[37;41mERRORS![0m
+[37;41mTests: 1[0m[37;41m, Assertions: 0[0m[37;41m, Errors: 1[0m[37;41m.[0m

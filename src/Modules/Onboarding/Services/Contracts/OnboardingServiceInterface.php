@@ -32,6 +32,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherRequest
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2ResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -92,7 +94,7 @@ interface OnboardingServiceInterface
      * @return AccountOpeningResponseDTO
      */
     public function openAccount(AccountOpeningRequestDTO $dto): AccountOpeningResponseDTO;
-    
+
     /**
      * Open L1 account with customer information.
      *
@@ -172,5 +174,13 @@ interface OnboardingServiceInterface
      * @return AccountInfoResponseDTO
      */
     public function getAccountInfo(AccountInfoRequestDTO $dto): AccountInfoResponseDTO;
+
+    /**
+     * Get account statement V2.
+     *
+     * @param AccountStatementV2RequestDTO $dto
+     * @return AccountStatementV2ResponseDTO
+     */
+    public function accountStatementV2(AccountStatementV2RequestDTO $dto): AccountStatementV2ResponseDTO;
 }
 
