@@ -146,6 +146,9 @@ return [
             'minor_account_verification' => [
                  'endpoint' => '/api/v1/M0AccountVerification',
             ],
+            'upgrade_minor_account' => [
+                 'endpoint' => '/api/v1/UpgradeMinorAccount',
+            ],
             'get_l2_discrepant_data' => [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
             ],

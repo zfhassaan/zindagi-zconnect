@@ -9,6 +9,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequest
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
@@ -64,6 +66,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $minorAccountOpeningEndpoint;
     protected Client $minorAccountVerificationClient;
     protected string $minorAccountVerificationEndpoint;
+    protected Client $upgradeMinorAccountClient;
+    protected string $upgradeMinorAccountEndpoint;
     protected Client $accountVerificationClient;
     protected string $accountVerificationEndpoint;
     protected Client $accountLinkingClient;
@@ -307,6 +311,20 @@ class OnboardingService implements OnboardingServiceInterface
         $this->minorAccountVerificationEndpoint = $minorAccountVerificationConfig['endpoint'] ?? '/api/v1/M0AccountVerification';
         
         $this->minorAccountVerificationClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        // Setup Upgrade Minor Account client
+        $upgradeMinorAccountConfig = $config['modules']['onboarding']['upgrade_minor_account'] ?? [];
+        $this->upgradeMinorAccountEndpoint = $upgradeMinorAccountConfig['endpoint'] ?? '/api/v1/UpgradeMinorAccount';
+        
+        $this->upgradeMinorAccountClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -2554,6 +2572,123 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: (string) $e->getCode(),
                 responseDescription: 'Failed to verify minor account: ' . $e->getMessage(),
+            );
+        }
+    }
+    /**
+     * Upgrade minor account.
+     */
+    public function upgradeMinorAccount(UpgradeMinorAccountRequestDTO $dto): UpgradeMinorAccountResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating upgrade minor account', [
+                'rrn' => $dto->rrn,
+                'mobile_number' => $dto->mobileNumber,
+            ]);
+
+            // Get authentication token
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            // Prepare headers
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            // Prepare request body
+            $requestBody = $dto->toArray();
+
+            // Log request
+            $this->loggingService->logRequest($this->upgradeMinorAccountEndpoint, $requestBody, $headers);
+
+            // Make API request
+            $response = $this->upgradeMinorAccountClient->post($this->upgradeMinorAccountEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            // Handle null or invalid JSON
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Upgrade Minor Account API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+                
+                return new UpgradeMinorAccountResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Upgrade Minor Account failed: Invalid response from API'
+                );
+            }
+
+            // Log response
+            $this->loggingService->logResponse(
+                $this->upgradeMinorAccountEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            // Audit log
+            $this->auditService->log(
+                'upgrade_minor_account',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return UpgradeMinorAccountResponseDTO::fromArray($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to upgrade minor account',
+                [
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            // Try to parse error response
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if ($errorResponse) {
+                return new UpgradeMinorAccountResponseDTO(
+                    success: false,
+                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
+                    responseDescription: $errorResponse['messages'] ?? 'Failed to upgrade minor account',
+                    originalResponse: $errorResponse
+                );
+            }
+            
+            return new UpgradeMinorAccountResponseDTO(
+                success: false,
+                responseCode: (string) $e->getCode(),
+                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Upgrade Minor Account error',
+                [
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            return new UpgradeMinorAccountResponseDTO(
+                success: false,
+                responseCode: (string) $e->getCode(),
+                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
             );
         }
     }
