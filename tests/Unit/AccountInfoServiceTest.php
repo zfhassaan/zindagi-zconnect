@@ -732,4 +732,3 @@ class AccountInfoServiceTest extends TestCase
         $this->assertEquals('00', $response->responseCode);
     }
 }
-
