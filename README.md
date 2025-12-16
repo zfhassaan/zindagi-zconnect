@@ -8,17 +8,23 @@
     <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
         <img src="https://img.shields.io/packagist/v/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="Latest Version">
     </a>
+    <a href="https://github.com/zfhassaan/zindagi-zconnect/actions/workflows/tests.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/zfhassaan/zindagi-zconnect/tests.yml?branch=master&style=flat-square&label=tests" alt="Tests">
+    </a>
     <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
         <img src="https://img.shields.io/packagist/dt/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="Total Downloads">
-    </a>
-    <a href="https://github.com/zfhassaan/zindagi-zconnect/actions/workflows/tests.yml">
-        <img src="https://img.shields.io/github/actions/workflow/status/zfhassaan/zindagi-zconnect/tests.yml?branch=main&style=flat-square" alt="Build Status">
     </a>
     <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
         <img src="https://img.shields.io/packagist/php-v/zfhassaan/zindagi-zconnect.svg?style=flat-square" alt="PHP Version">
     </a>
+    <a href="https://packagist.org/packages/zfhassaan/zindagi-zconnect">
+        <img src="https://img.shields.io/badge/laravel-10%20%7C%2011%20%7C%2012-FF2D20?style=flat-square&logo=laravel" alt="Laravel Version">
+    </a>
     <a href="https://github.com/zfhassaan/zindagi-zconnect/blob/main/LICENSE">
         <img src="https://img.shields.io/github/license/zfhassaan/zindagi-zconnect?style=flat-square" alt="License">
+    </a>
+    <a href="https://github.com/zfhassaan/zindagi-zconnect">
+        <img src="https://img.shields.io/badge/code%20style-pint-orange?style=flat-square" alt="Code Style">
     </a>
 </p>
 
@@ -189,12 +195,49 @@ src/
 
 ---
 
+## Quality & Testing
+
+This package maintains high code quality standards:
+
+- ✅ **294 comprehensive unit tests** covering all modules and services
+- ✅ **1154+ assertions** ensuring robust functionality
+- ✅ **Continuous Integration** via GitHub Actions
+- ✅ **Multi-version testing** across PHP 8.2, 8.3 and Laravel 10, 11, 12
+- ✅ **Code style enforcement** using Laravel Pint
+- ✅ **Type-safe DTOs** for all API requests and responses
+- ✅ **100% test coverage** for critical business logic
+
+### CI/CD Pipeline
+
+Every commit is automatically tested against:
+
+- PHP 8.2, 8.3
+- Laravel 10.x, 11.x, 12.x
+- SQLite in-memory database
+- Multiple dependency versions (prefer-lowest, prefer-stable)
+
+---
+
 ## Testing
+
+Run the test suite locally:
 
 ```bash
 composer test
 # or
 vendor/bin/phpunit
+```
+
+Run tests with coverage:
+
+```bash
+composer test-coverage
+```
+
+Format code with Laravel Pint:
+
+```bash
+composer format
 ```
 
 ---
