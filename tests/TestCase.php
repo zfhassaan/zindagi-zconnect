@@ -17,6 +17,7 @@ abstract class TestCase extends OrchestraTestCase
      */
     protected function setUp(): void
     {
+        // Register package migrations so DatabaseMigrations can run them
         parent::setUp();
 
         // Register package migrations so DatabaseMigrations can run them

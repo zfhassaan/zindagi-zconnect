@@ -23,14 +23,14 @@
 </p>
 
 <p align="center">
-    A clean, fully-typed Laravel package to integrate with <strong>JS Bank's Z-Connect API</strong> — the official fintech API platform for <strong>Zindigi digital banking services</strong>.
+    A clean, fully-typed Laravel package to integrate with <strong>JS Bank’s Z-Connect API</strong> -- the official fintech API platform for <strong>Zindigi digital banking services</strong>.
 </p>
 
 ---
 
 ## Disclaimer
 
-This is an **unofficial** Laravel package for integrating with **JS Bank's Z-Connect (Zindigi) API**.
+This is an **unofficial** Laravel package for integrating with **JS Bank’s Z-Connect (Zindigi) API**.
 
 This repository is **not owned, maintained, or endorsed by JS Bank or Zindigi**. All trademarks, logos, APIs, and systems belong to their respective owners.
 
@@ -214,10 +214,3 @@ For bugs or feature requests, please open an issue on [GitHub](https://github.co
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## Credits
-
-- [Hassaan Ali](https://github.com/zfhassaan)
-- [All Contributors](../../contributors)
