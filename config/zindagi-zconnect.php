@@ -149,6 +149,9 @@ return [
             'upgrade_minor_account' => [
                  'endpoint' => '/api/v1/UpgradeMinorAccount',
             ],
+            'account_statement_v2' => [
+                 'endpoint' => '/api/v2/digiWalletStatement',
+            ],
             'get_l2_discrepant_data' => [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
             ],

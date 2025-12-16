@@ -41,6 +41,8 @@ class AuditService implements AuditServiceInterface
             'user_agent' => request()->userAgent(),
             'created_at' => now(),
         ]);
+
+        
     }
 
     /**
