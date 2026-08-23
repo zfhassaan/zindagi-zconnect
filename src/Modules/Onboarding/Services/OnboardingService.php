@@ -127,6 +127,7 @@ class OnboardingService implements OnboardingServiceInterface
     protected Client $agentCashDepositClient;
     protected string $agentCashDepositEndpoint;
 
+
     public function __construct(
         protected HttpClientInterface $httpClient,
         protected AuthenticationServiceInterface $authService,
@@ -138,14 +139,14 @@ class OnboardingService implements OnboardingServiceInterface
         protected AccountOpeningRepositoryInterface $accountOpeningRepository
     ) {
         $this->endpoint = config('zindagi-zconnect.modules.onboarding.endpoint', '/onboarding');
-        
+
         // Setup account verification client
         $config = config('zindagi-zconnect', []);
         $accountVerificationConfig = $config['modules']['onboarding']['account_verification'] ?? [];
-        
+
         $baseUrl = $config['api']['base_url'] ?? 'https://z-sandbox.jsbl.com/zconnect';
         $this->accountVerificationEndpoint = $accountVerificationConfig['endpoint'] ?? '/api/v2/verifyacclinkacc-blb';
-        
+
         $this->accountVerificationClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -159,7 +160,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account linking client
         $accountLinkingConfig = $config['modules']['onboarding']['account_linking'] ?? [];
         $this->accountLinkingEndpoint = $accountLinkingConfig['endpoint'] ?? '/api/v2/linkacc-blb';
-        
+
         $this->accountLinkingClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -173,7 +174,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account opening client
         $accountOpeningConfig = $config['modules']['onboarding']['account_opening'] ?? [];
         $this->accountOpeningEndpoint = $accountOpeningConfig['endpoint'] ?? '/api/v2/accountopening-blb';
-        
+
         $this->accountOpeningClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -187,7 +188,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account opening L1 client
         $accountOpeningL1Config = $config['modules']['onboarding']['account_opening_l1'] ?? [];
         $this->accountOpeningL1Endpoint = $accountOpeningL1Config['endpoint'] ?? '/api/v2/accountopeningl1-blb2';
-        
+
         $this->accountOpeningL1Client = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -197,11 +198,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup account upgrade client
         $accountUpgradeConfig = $config['modules']['onboarding']['account_upgrade'] ?? [];
         $this->accountUpgradeEndpoint = $accountUpgradeConfig['endpoint'] ?? '/api/v2/upgradeaccount';
-        
+
         $this->accountUpgradeClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -211,11 +212,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup L2 account fields client
         $l2AccountFieldsConfig = $config['modules']['onboarding']['l2_account_fields'] ?? [];
         $this->l2AccountFieldsEndpoint = $l2AccountFieldsConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountFields';
-        
+
         $this->l2AccountFieldsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -225,11 +226,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup Update PMD KYC client
         $updatePmdKycConfig = $config['modules']['onboarding']['update_pmd_kyc'] ?? [];
         $this->updatePmdKycEndpoint = $updatePmdKycConfig['endpoint'] ?? '/api/v1/updatePmdAndKyc';
-        
+
         $this->updatePmdKycClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -239,11 +240,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup Get L2 Discrepant client
         $getL2DiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
         $this->getL2DiscrepantEndpoint = $getL2DiscrepantConfig['endpoint'] ?? '/api/v1/getL2AccountUpgradeDiscrepant';
-        
+
         $this->getL2DiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -253,11 +254,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup Get L2 Accounts client
         $getL2AccountsConfig = $config['modules']['onboarding']['get_l2_accounts'] ?? [];
         $this->getL2AccountsEndpoint = $getL2AccountsConfig['endpoint'] ?? '/api/v1/getL2Accounts';
-        
+
         $this->getL2AccountsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -267,11 +268,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup L2 Account Upgrade Discrepant client
         $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
         $this->l2AccountUpgradeDiscrepantEndpoint = $l2AccountUpgradeDiscrepantConfig['endpoint'] ?? '/api/v1/l2AccountUpgradeDiscrepant';
-        
+
         $this->l2AccountUpgradeDiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -281,11 +282,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup L2 Account Status client
         $l2AccountStatusConfig = $config['modules']['onboarding']['l2_account_status'] ?? [];
         $this->l2AccountStatusEndpoint = $l2AccountStatusConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountStatus';
-        
+
         $this->l2AccountStatusClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -295,11 +296,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-        
+
         // Setup Level 2 Account Mother client
         $level2AccountMotherConfig = $config['modules']['onboarding']['level2_account_mother'] ?? [];
         $this->level2AccountMotherEndpoint = $level2AccountMotherConfig['endpoint'] ?? '/api/v1/level2AccountMother';
-        
+
         $this->level2AccountMotherClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -699,7 +700,7 @@ class OnboardingService implements OnboardingServiceInterface
                 'clientSecret' => $token,
                 'organizationId' => $config['auth']['organization_id'] ?? '223',
             ];
-            
+
 
             // Prepare request body
             $requestBody = $dto->toApiRequest();
@@ -723,8 +724,8 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
-                
+
+
                 return new AccountVerificationResponseDTO(
                     success: false,
                     responseCode: '',
@@ -796,7 +797,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-            
+
 
             return new AccountVerificationResponseDTO(
                 success: false,
@@ -873,7 +874,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new AccountLinkingResponseDTO(
                     success: false,
                     responseCode: '',
@@ -944,7 +945,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-            
+
 
             return new AccountLinkingResponseDTO(
                 success: false,
@@ -1022,7 +1023,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new AccountOpeningResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1038,7 +1039,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountOpeningResponseDTO::fromApiResponse($responseData);
-            
+
             // Store in database
             $opening = $this->accountOpeningRepository->create([
                 'trace_no' => $dto->traceNo,
@@ -1094,7 +1095,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-            
+
 
             return new AccountOpeningResponseDTO(
                 success: false,
@@ -1215,7 +1216,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new AccountOpeningL1ResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1231,7 +1232,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountOpeningL1ResponseDTO::fromArray($responseData);
-            
+
             // Store in database
             $opening = $this->accountOpeningRepository->create([
                 'trace_no' => $dto->traceNo,
@@ -1286,7 +1287,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['messages'] ?? 'L1 Account opening failed',
                 );
             }
-            
+
             return new AccountOpeningL1ResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1368,7 +1369,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new AccountUpgradeResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1384,7 +1385,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountUpgradeResponseDTO::fromArray($responseData);
-            
+
             // Audit log
             $this->auditService->log(
                 'account_upgrade',
@@ -1423,7 +1424,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['messages'] ?? 'Account upgrade failed',
                 );
             }
-            
+
             return new AccountUpgradeResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1446,7 +1447,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
         }
     }
-    
+
     protected function validateUpgradeRequest(AccountUpgradeRequestDTO $dto): void
     {
          // DTO does most validation
@@ -1501,7 +1502,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new L2AccountFieldsResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1541,7 +1542,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account fields',
                 );
             }
-            
+
             return new L2AccountFieldsResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1611,7 +1612,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new UpdatePmdKycResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1625,7 +1626,7 @@ class OnboardingService implements OnboardingServiceInterface
                 $responseData,
                 $response->getStatusCode()
             );
-            
+
             // Audit log
             $this->auditService->log(
                 'update_pmd_kyc',
@@ -1660,7 +1661,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to update PMD and KYC',
                 );
             }
-            
+
             return new UpdatePmdKycResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1730,7 +1731,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new GetL2DiscrepantResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1770,7 +1771,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 discrepant data',
                 );
             }
-            
+
             return new GetL2DiscrepantResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1838,7 +1839,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new GetL2AccountsResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1877,7 +1878,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 accounts',
                 );
             }
-            
+
             return new GetL2AccountsResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1947,7 +1948,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new L2AccountUpgradeDiscrepantResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1997,7 +1998,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to submit L2 account upgrade discrepant data',
                 );
             }
-            
+
             return new L2AccountUpgradeDiscrepantResponseDTO(
                 success: false,
                 responseCode: '',
@@ -2067,7 +2068,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new L2AccountStatusResponseDTO(
                     success: false,
                     responseCode: '',
@@ -2116,7 +2117,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account status',
                 );
             }
-            
+
             return new L2AccountStatusResponseDTO(
                 success: false,
                 responseCode: '',
@@ -2184,7 +2185,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-                
+
                 return new Level2AccountMotherResponseDTO(
                     success: false,
                     responseCode: '',
@@ -2232,7 +2233,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['responseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get Level 2 account mother names',
                 );
             }
-            
+
             return new Level2AccountMotherResponseDTO(
                 success: false,
                 responseCode: '',

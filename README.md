@@ -199,13 +199,13 @@ src/
 
 This package maintains high code quality standards:
 
-- ✅ **294 comprehensive unit tests** covering all modules and services
-- ✅ **1154+ assertions** ensuring robust functionality
-- ✅ **Continuous Integration** via GitHub Actions
-- ✅ **Multi-version testing** across PHP 8.2, 8.3 and Laravel 10, 11, 12
-- ✅ **Code style enforcement** using Laravel Pint
-- ✅ **Type-safe DTOs** for all API requests and responses
-- ✅ **100% test coverage** for critical business logic
+- **294 comprehensive unit tests** covering all modules and services
+- **1154+ assertions** ensuring robust functionality
+- **Continuous Integration** via GitHub Actions
+- **Multi-version testing** across PHP 8.2, 8.3 and Laravel 10, 11, 12
+- **Code style enforcement** using Laravel Pint
+- **Type-safe DTOs** for all API requests and responses
+- **100% test coverage** for critical business logic
 
 ### CI/CD Pipeline
 
