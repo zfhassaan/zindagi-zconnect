@@ -30,6 +30,29 @@ class MinorAccountVerificationRequestDTO
         $this->validate();
     }
 
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            rrn: $data['rrn'] ?? $data['RRN'] ?? '',
+            dateTime: $data['date_time'] ?? $data['DateTime'] ?? '',
+            cnic: $data['cnic'] ?? $data['Cnic'] ?? '',
+            issuanceDate: $data['issuance_date'] ?? $data['IssuanceDate'] ?? '',
+            mobileNumber: $data['mobile_number'] ?? $data['MobileNumber'] ?? '',
+            channelId: $data['channel_id'] ?? $data['ChannelId'] ?? 'NOVA',
+            terminalId: $data['terminal_id'] ?? $data['TerminalId'] ?? 'NOVA',
+            reserved1: $data['reserved1'] ?? $data['Reserved1'] ?? '',
+            reserved2: $data['reserved2'] ?? $data['Reserved2'] ?? '',
+            reserved3: $data['reserved3'] ?? $data['Reserved3'] ?? '',
+            reserved4: $data['reserved4'] ?? $data['Reserved4'] ?? '',
+            reserved5: $data['reserved5'] ?? $data['Reserved5'] ?? '',
+            reserved6: $data['reserved6'] ?? $data['Reserved6'] ?? '',
+            reserved7: $data['reserved7'] ?? $data['Reserved7'] ?? '',
+            reserved8: $data['reserved8'] ?? $data['Reserved8'] ?? '',
+            reserved9: $data['reserved9'] ?? $data['Reserved9'] ?? '',
+            reserved10: $data['reserved10'] ?? $data['Reserved10'] ?? '',
+        );
+    }
+
     protected function validate(): void
     {
         if (empty($this->rrn)) {

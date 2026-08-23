@@ -5,14 +5,6 @@ declare(strict_types=1);
 namespace zfhassaan\ZindagiZconnect\Modules\Onboarding\Services;
 
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\Contracts\OnboardingServiceInterface;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequestDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationRequestDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationResponseDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountRequestDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountResponseDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2RequestDTO;
-use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2ResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\OnboardingResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountVerificationRequestDTO;
@@ -41,6 +33,28 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherRequest
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\Level2AccountMotherResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentLoginRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentLoginResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -64,14 +78,6 @@ use Illuminate\Support\Facades\Event;
 class OnboardingService implements OnboardingServiceInterface
 {
     protected string $endpoint;
-    protected Client $minorAccountOpeningClient;
-    protected string $minorAccountOpeningEndpoint;
-    protected Client $minorAccountVerificationClient;
-    protected string $minorAccountVerificationEndpoint;
-    protected Client $upgradeMinorAccountClient;
-    protected string $upgradeMinorAccountEndpoint;
-    protected Client $accountStatementV2Client;
-    protected string $accountStatementV2Endpoint;
     protected Client $accountVerificationClient;
     protected string $accountVerificationEndpoint;
     protected Client $accountLinkingClient;
@@ -98,7 +104,28 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $level2AccountMotherEndpoint;
     protected Client $accountInfoClient;
     protected string $accountInfoEndpoint;
-
+    protected Client $accountStatementV2Client;
+    protected string $accountStatementV2Endpoint;
+    protected Client $minorAccountOpeningClient;
+    protected string $minorAccountOpeningEndpoint;
+    protected Client $minorAccountVerificationClient;
+    protected string $minorAccountVerificationEndpoint;
+    protected Client $upgradeMinorAccountClient;
+    protected string $upgradeMinorAccountEndpoint;
+    protected Client $l2AccountUpgradeClient;
+    protected string $l2AccountUpgradeEndpoint;
+    protected Client $accountLinkingV2Client;
+    protected string $accountLinkingV2Endpoint;
+    protected Client $accountUpgradeV2Client;
+    protected string $accountUpgradeV2Endpoint;
+    protected Client $agentLoginClient;
+    protected string $agentLoginEndpoint;
+    protected Client $agentAccountVerificationClient;
+    protected string $agentAccountVerificationEndpoint;
+    protected Client $agentCashDepositInquiryClient;
+    protected string $agentCashDepositInquiryEndpoint;
+    protected Client $agentCashDepositClient;
+    protected string $agentCashDepositEndpoint;
 
     public function __construct(
         protected HttpClientInterface $httpClient,
@@ -111,14 +138,14 @@ class OnboardingService implements OnboardingServiceInterface
         protected AccountOpeningRepositoryInterface $accountOpeningRepository
     ) {
         $this->endpoint = config('zindagi-zconnect.modules.onboarding.endpoint', '/onboarding');
-
+        
         // Setup account verification client
         $config = config('zindagi-zconnect', []);
         $accountVerificationConfig = $config['modules']['onboarding']['account_verification'] ?? [];
-
+        
         $baseUrl = $config['api']['base_url'] ?? 'https://z-sandbox.jsbl.com/zconnect';
         $this->accountVerificationEndpoint = $accountVerificationConfig['endpoint'] ?? '/api/v2/verifyacclinkacc-blb';
-
+        
         $this->accountVerificationClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -132,7 +159,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account linking client
         $accountLinkingConfig = $config['modules']['onboarding']['account_linking'] ?? [];
         $this->accountLinkingEndpoint = $accountLinkingConfig['endpoint'] ?? '/api/v2/linkacc-blb';
-
+        
         $this->accountLinkingClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -146,7 +173,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account opening client
         $accountOpeningConfig = $config['modules']['onboarding']['account_opening'] ?? [];
         $this->accountOpeningEndpoint = $accountOpeningConfig['endpoint'] ?? '/api/v2/accountopening-blb';
-
+        
         $this->accountOpeningClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -160,7 +187,7 @@ class OnboardingService implements OnboardingServiceInterface
         // Setup account opening L1 client
         $accountOpeningL1Config = $config['modules']['onboarding']['account_opening_l1'] ?? [];
         $this->accountOpeningL1Endpoint = $accountOpeningL1Config['endpoint'] ?? '/api/v2/accountopeningl1-blb2';
-
+        
         $this->accountOpeningL1Client = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -170,11 +197,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup account upgrade client
         $accountUpgradeConfig = $config['modules']['onboarding']['account_upgrade'] ?? [];
         $this->accountUpgradeEndpoint = $accountUpgradeConfig['endpoint'] ?? '/api/v2/upgradeaccount';
-
+        
         $this->accountUpgradeClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -184,11 +211,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup L2 account fields client
         $l2AccountFieldsConfig = $config['modules']['onboarding']['l2_account_fields'] ?? [];
         $this->l2AccountFieldsEndpoint = $l2AccountFieldsConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountFields';
-
+        
         $this->l2AccountFieldsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -198,11 +225,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup Update PMD KYC client
         $updatePmdKycConfig = $config['modules']['onboarding']['update_pmd_kyc'] ?? [];
         $this->updatePmdKycEndpoint = $updatePmdKycConfig['endpoint'] ?? '/api/v1/updatePmdAndKyc';
-
+        
         $this->updatePmdKycClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -212,11 +239,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup Get L2 Discrepant client
         $getL2DiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
         $this->getL2DiscrepantEndpoint = $getL2DiscrepantConfig['endpoint'] ?? '/api/v1/getL2AccountUpgradeDiscrepant';
-
+        
         $this->getL2DiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -226,11 +253,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup Get L2 Accounts client
         $getL2AccountsConfig = $config['modules']['onboarding']['get_l2_accounts'] ?? [];
         $this->getL2AccountsEndpoint = $getL2AccountsConfig['endpoint'] ?? '/api/v1/getL2Accounts';
-
+        
         $this->getL2AccountsClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -240,11 +267,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup L2 Account Upgrade Discrepant client
-        $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['l2_account_upgrade_discrepant'] ?? [];
+        $l2AccountUpgradeDiscrepantConfig = $config['modules']['onboarding']['get_l2_discrepant_data'] ?? [];
         $this->l2AccountUpgradeDiscrepantEndpoint = $l2AccountUpgradeDiscrepantConfig['endpoint'] ?? '/api/v1/l2AccountUpgradeDiscrepant';
-
+        
         $this->l2AccountUpgradeDiscrepantClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -254,11 +281,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup L2 Account Status client
         $l2AccountStatusConfig = $config['modules']['onboarding']['l2_account_status'] ?? [];
         $this->l2AccountStatusEndpoint = $l2AccountStatusConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountStatus';
-
+        
         $this->l2AccountStatusClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -268,11 +295,11 @@ class OnboardingService implements OnboardingServiceInterface
                 'Accept' => 'application/json',
             ],
         ]);
-
+        
         // Setup Level 2 Account Mother client
         $level2AccountMotherConfig = $config['modules']['onboarding']['level2_account_mother'] ?? [];
         $this->level2AccountMotherEndpoint = $level2AccountMotherConfig['endpoint'] ?? '/api/v1/level2AccountMother';
-
+        
         $this->level2AccountMotherClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
@@ -283,8 +310,7 @@ class OnboardingService implements OnboardingServiceInterface
             ],
         ]);
 
-        // Setup Account Info client
-        $accountInfoConfig = $config['modules']['onboarding']['account_info'] ?? [];
+        $accountInfoConfig = $config['modules']['onboarding']['get_account_info'] ?? [];
         $this->accountInfoEndpoint = $accountInfoConfig['endpoint'] ?? '/api/v1/accountInfo';
 
         $this->accountInfoClient = new Client([
@@ -297,49 +323,6 @@ class OnboardingService implements OnboardingServiceInterface
             ],
         ]);
 
-        // Setup Minor Account Opening client
-        $minorAccountOpeningConfig = $config['modules']['onboarding']['minor_account_opening'] ?? [];
-        $this->minorAccountOpeningEndpoint = $minorAccountOpeningConfig['endpoint'] ?? '/api/v1/M0AccountOpening';
-
-        $this->minorAccountOpeningClient = new Client([
-            'base_uri' => $baseUrl,
-            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
-            'verify' => $config['security']['verify_ssl'] ?? true,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ]);
-
-        // Setup Minor Account Verification client
-        $minorAccountVerificationConfig = $config['modules']['onboarding']['minor_account_verification'] ?? [];
-        $this->minorAccountVerificationEndpoint = $minorAccountVerificationConfig['endpoint'] ?? '/api/v1/M0AccountVerification';
-
-        $this->minorAccountVerificationClient = new Client([
-            'base_uri' => $baseUrl,
-            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
-            'verify' => $config['security']['verify_ssl'] ?? true,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ]);
-
-        // Setup Upgrade Minor Account client
-        $upgradeMinorAccountConfig = $config['modules']['onboarding']['upgrade_minor_account'] ?? [];
-        $this->upgradeMinorAccountEndpoint = $upgradeMinorAccountConfig['endpoint'] ?? '/api/v1/UpgradeMinorAccount';
-
-        $this->upgradeMinorAccountClient = new Client([
-            'base_uri' => $baseUrl,
-            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
-            'verify' => $config['security']['verify_ssl'] ?? true,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ]);
-
-        // Setup Account Statement V2 client
         $accountStatementV2Config = $config['modules']['onboarding']['account_statement_v2'] ?? [];
         $this->accountStatementV2Endpoint = $accountStatementV2Config['endpoint'] ?? '/api/v2/digiWalletStatement';
 
@@ -353,8 +336,135 @@ class OnboardingService implements OnboardingServiceInterface
             ],
         ]);
 
+        $minorAccountOpeningConfig = $config['modules']['onboarding']['minor_account_opening'] ?? [];
+        $this->minorAccountOpeningEndpoint = $minorAccountOpeningConfig['endpoint'] ?? '/api/v1/M0AccountOpening';
 
+        $this->minorAccountOpeningClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
 
+        $minorAccountVerificationConfig = $config['modules']['onboarding']['minor_account_verification'] ?? [];
+        $this->minorAccountVerificationEndpoint = $minorAccountVerificationConfig['endpoint'] ?? '/api/v1/M0AccountVerification';
+
+        $this->minorAccountVerificationClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $upgradeMinorAccountConfig = $config['modules']['onboarding']['upgrade_minor_account'] ?? [];
+        $this->upgradeMinorAccountEndpoint = $upgradeMinorAccountConfig['endpoint'] ?? '/api/v1/UpgradeMinorAccount';
+
+        $this->upgradeMinorAccountClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $l2AccountUpgradeConfig = $config['modules']['onboarding']['l2_account_upgrade'] ?? [];
+        $this->l2AccountUpgradeEndpoint = $l2AccountUpgradeConfig['endpoint'] ?? '/api/v1/l2Account/l2AccountUpgrade';
+
+        $this->l2AccountUpgradeClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $accountLinkingV2Config = $config['modules']['onboarding']['account_linking_v2'] ?? [];
+        $this->accountLinkingV2Endpoint = $accountLinkingV2Config['endpoint'] ?? '/api/v2/acountlinking';
+
+        $this->accountLinkingV2Client = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $accountUpgradeV2Config = $config['modules']['onboarding']['account_upgrade_v2'] ?? [];
+        $this->accountUpgradeV2Endpoint = $accountUpgradeV2Config['endpoint'] ?? '/api/v3/upgradeaccount';
+
+        $this->accountUpgradeV2Client = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentLoginConfig = $config['modules']['onboarding']['agent_login'] ?? [];
+        $this->agentLoginEndpoint = $agentLoginConfig['endpoint'] ?? '/api/v1/loginagentmate';
+
+        $this->agentLoginClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentAccountVerificationConfig = $config['modules']['onboarding']['agent_account_verification'] ?? [];
+        $this->agentAccountVerificationEndpoint = $agentAccountVerificationConfig['endpoint'] ?? '/api/v1/accountverificationagentmate';
+
+        $this->agentAccountVerificationClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentCashDepositInquiryConfig = $config['modules']['onboarding']['agent_cash_deposit_inquiry'] ?? [];
+        $this->agentCashDepositInquiryEndpoint = $agentCashDepositInquiryConfig['endpoint'] ?? '/api/v1/agentcashdepositinquiry';
+
+        $this->agentCashDepositInquiryClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentCashDepositConfig = $config['modules']['onboarding']['agent_cash_deposit'] ?? [];
+        $this->agentCashDepositEndpoint = $agentCashDepositConfig['endpoint'] ?? '/api/v1/agentcashdeposit';
+
+        $this->agentCashDepositClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
     }
 
     /**
@@ -589,7 +699,7 @@ class OnboardingService implements OnboardingServiceInterface
                 'clientSecret' => $token,
                 'organizationId' => $config['auth']['organization_id'] ?? '223',
             ];
-
+            
 
             // Prepare request body
             $requestBody = $dto->toApiRequest();
@@ -613,8 +723,8 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
-
+                
+                
                 return new AccountVerificationResponseDTO(
                     success: false,
                     responseCode: '',
@@ -686,7 +796,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-
+            
 
             return new AccountVerificationResponseDTO(
                 success: false,
@@ -763,7 +873,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new AccountLinkingResponseDTO(
                     success: false,
                     responseCode: '',
@@ -834,7 +944,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-
+            
 
             return new AccountLinkingResponseDTO(
                 success: false,
@@ -912,7 +1022,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new AccountOpeningResponseDTO(
                     success: false,
                     responseCode: '',
@@ -928,7 +1038,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountOpeningResponseDTO::fromApiResponse($responseData);
-
+            
             // Store in database
             $opening = $this->accountOpeningRepository->create([
                 'trace_no' => $dto->traceNo,
@@ -984,7 +1094,7 @@ class OnboardingService implements OnboardingServiceInterface
                     errorCode: (string) ($errorResponse['errorcode'] ?? '')
                 );
             }
-
+            
 
             return new AccountOpeningResponseDTO(
                 success: false,
@@ -1105,7 +1215,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new AccountOpeningL1ResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1121,7 +1231,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountOpeningL1ResponseDTO::fromArray($responseData);
-
+            
             // Store in database
             $opening = $this->accountOpeningRepository->create([
                 'trace_no' => $dto->traceNo,
@@ -1176,7 +1286,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['messages'] ?? 'L1 Account opening failed',
                 );
             }
-
+            
             return new AccountOpeningL1ResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1258,7 +1368,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new AccountUpgradeResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1274,7 +1384,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
 
             $responseDTO = AccountUpgradeResponseDTO::fromArray($responseData);
-
+            
             // Audit log
             $this->auditService->log(
                 'account_upgrade',
@@ -1313,7 +1423,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['messages'] ?? 'Account upgrade failed',
                 );
             }
-
+            
             return new AccountUpgradeResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1336,7 +1446,7 @@ class OnboardingService implements OnboardingServiceInterface
             );
         }
     }
-
+    
     protected function validateUpgradeRequest(AccountUpgradeRequestDTO $dto): void
     {
          // DTO does most validation
@@ -1391,7 +1501,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new L2AccountFieldsResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1431,7 +1541,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account fields',
                 );
             }
-
+            
             return new L2AccountFieldsResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1501,7 +1611,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new UpdatePmdKycResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1515,7 +1625,7 @@ class OnboardingService implements OnboardingServiceInterface
                 $responseData,
                 $response->getStatusCode()
             );
-
+            
             // Audit log
             $this->auditService->log(
                 'update_pmd_kyc',
@@ -1550,7 +1660,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to update PMD and KYC',
                 );
             }
-
+            
             return new UpdatePmdKycResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1620,7 +1730,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new GetL2DiscrepantResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1660,7 +1770,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 discrepant data',
                 );
             }
-
+            
             return new GetL2DiscrepantResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1728,7 +1838,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new GetL2AccountsResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1767,7 +1877,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 accounts',
                 );
             }
-
+            
             return new GetL2AccountsResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1837,7 +1947,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new L2AccountUpgradeDiscrepantResponseDTO(
                     success: false,
                     responseCode: '',
@@ -1887,7 +1997,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to submit L2 account upgrade discrepant data',
                 );
             }
-
+            
             return new L2AccountUpgradeDiscrepantResponseDTO(
                 success: false,
                 responseCode: '',
@@ -1957,7 +2067,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new L2AccountStatusResponseDTO(
                     success: false,
                     responseCode: '',
@@ -2006,7 +2116,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['ResponseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get L2 account status',
                 );
             }
-
+            
             return new L2AccountStatusResponseDTO(
                 success: false,
                 responseCode: '',
@@ -2074,7 +2184,7 @@ class OnboardingService implements OnboardingServiceInterface
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
-
+                
                 return new Level2AccountMotherResponseDTO(
                     success: false,
                     responseCode: '',
@@ -2122,7 +2232,7 @@ class OnboardingService implements OnboardingServiceInterface
                     message: $errorResponse['responseDescription'] ?? $errorResponse['messages'] ?? 'Failed to get Level 2 account mother names',
                 );
             }
-
+            
             return new Level2AccountMotherResponseDTO(
                 success: false,
                 responseCode: '',
@@ -2151,16 +2261,14 @@ class OnboardingService implements OnboardingServiceInterface
     public function getAccountInfo(AccountInfoRequestDTO $dto): AccountInfoResponseDTO
     {
         try {
-            $this->loggingService->logInfo('Getting account information', [
+            $this->loggingService->logInfo('Getting account info', [
                 'mobile_number' => $dto->mobileNumber,
                 'rrn' => $dto->rrn,
             ]);
 
-            // Get authentication token
             $token = $this->authService->authenticate();
             $config = config('zindagi-zconnect');
 
-            // Prepare headers
             $headers = [
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
@@ -2169,13 +2277,10 @@ class OnboardingService implements OnboardingServiceInterface
                 'organizationId' => $config['auth']['organization_id'] ?? '223',
             ];
 
-            // Prepare request body
             $requestBody = $dto->toArray();
 
-            // Log request
             $this->loggingService->logRequest($this->accountInfoEndpoint, $requestBody, $headers);
 
-            // Make API request
             $response = $this->accountInfoClient->post($this->accountInfoEndpoint, [
                 'headers' => $headers,
                 'json' => $requestBody,
@@ -2184,10 +2289,9 @@ class OnboardingService implements OnboardingServiceInterface
             $responseBody = $response->getBody()->getContents();
             $responseData = json_decode($responseBody, true);
 
-            // Handle null or invalid JSON
             if (!is_array($responseData)) {
                 $this->loggingService->logError(
-                    'Invalid response from account info API',
+                    'Invalid response from Account Info API',
                     ['response_body' => $responseBody],
                     new \RuntimeException('Invalid JSON response')
                 );
@@ -2199,16 +2303,14 @@ class OnboardingService implements OnboardingServiceInterface
                 );
             }
 
-            // Log response
             $this->loggingService->logResponse(
                 $this->accountInfoEndpoint,
                 $responseData,
                 $response->getStatusCode()
             );
 
-            // Audit log
             $this->auditService->log(
-                'account_info',
+                'get_account_info',
                 'onboarding',
                 $dto->toArray(),
                 (string) (auth()->id() ?? 'system'),
@@ -2226,27 +2328,20 @@ class OnboardingService implements OnboardingServiceInterface
                 $e
             );
 
-            // Try to parse error response
             $errorResponse = null;
             if ($e->hasResponse()) {
                 $errorBody = $e->getResponse()->getBody()->getContents();
                 $errorResponse = json_decode($errorBody, true);
             }
 
-            if ($errorResponse) {
-                return new AccountInfoResponseDTO(
-                    success: false,
-                    responseCode: '',
-                    message: $errorResponse['messages'] ?? 'Failed to get account info',
-                    errorCode: $errorResponse['errorcode'] ?? null
-                );
+            if (is_array($errorResponse)) {
+                return AccountInfoResponseDTO::fromApiResponse($errorResponse);
             }
 
             return new AccountInfoResponseDTO(
                 success: false,
                 responseCode: '',
                 message: 'Failed to get account info: ' . $e->getMessage(),
-                errorCode: (string) $e->getCode()
             );
         } catch (\Exception $e) {
             $this->loggingService->logError(
@@ -2261,8 +2356,1252 @@ class OnboardingService implements OnboardingServiceInterface
                 success: false,
                 responseCode: '',
                 message: 'Failed to get account info: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Get account statement V2 (digi wallet statement).
+     */
+    public function accountStatementV2(AccountStatementV2RequestDTO $dto): AccountStatementV2ResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Getting account statement V2', [
+                'account_number' => $dto->accountNumber,
+                'from_date' => $dto->fromDate,
+                'to_date' => $dto->toDate,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->accountStatementV2Endpoint, $requestBody, $headers);
+
+            $response = $this->accountStatementV2Client->post($this->accountStatementV2Endpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Account Statement V2 API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AccountStatementV2ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Get account statement V2 failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->accountStatementV2Endpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'account_statement_v2',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->accountNumber
+            );
+
+            return AccountStatementV2ResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to get account statement V2',
+                [
+                    'account_number' => $dto->accountNumber,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AccountStatementV2ResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AccountStatementV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to get account statement V2: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Get account statement V2 error',
+                [
+                    'account_number' => $dto->accountNumber,
+                ],
+                $e
+            );
+
+            return new AccountStatementV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to get account statement V2: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Open a minor (M0) account.
+     */
+    public function minorAccountOpening(MinorAccountOpeningRequestDTO $dto): MinorAccountOpeningResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Opening minor account', [
+                'cnic' => $dto->cnic,
+                'mobile_number' => $dto->mobileNumber,
+                'rrn' => $dto->rrn,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->minorAccountOpeningEndpoint, $requestBody, $headers);
+
+            $response = $this->minorAccountOpeningClient->post($this->minorAccountOpeningEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Minor Account Opening API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new MinorAccountOpeningResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Minor account opening failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->minorAccountOpeningEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'minor_account_opening',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return MinorAccountOpeningResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to open minor account',
+                [
+                    'cnic' => $dto->cnic,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return MinorAccountOpeningResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new MinorAccountOpeningResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Minor account opening error',
+                [
+                    'cnic' => $dto->cnic,
+                ],
+                $e
+            );
+
+            return new MinorAccountOpeningResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Verify a minor (M0) account.
+     */
+    public function minorAccountVerification(MinorAccountVerificationRequestDTO $dto): MinorAccountVerificationResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Verifying minor account', [
+                'cnic' => $dto->cnic,
+                'mobile_number' => $dto->mobileNumber,
+                'rrn' => $dto->rrn,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->minorAccountVerificationEndpoint, $requestBody, $headers);
+
+            $response = $this->minorAccountVerificationClient->post($this->minorAccountVerificationEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Minor Account Verification API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new MinorAccountVerificationResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Minor account verification failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->minorAccountVerificationEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'minor_account_verification',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return MinorAccountVerificationResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to verify minor account',
+                [
+                    'cnic' => $dto->cnic,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return MinorAccountVerificationResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new MinorAccountVerificationResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to verify minor account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Minor account verification error',
+                [
+                    'cnic' => $dto->cnic,
+                ],
+                $e
+            );
+
+            return new MinorAccountVerificationResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to verify minor account: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Upgrade a minor (M0) account.
+     */
+    public function upgradeMinorAccount(UpgradeMinorAccountRequestDTO $dto): UpgradeMinorAccountResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Upgrading minor account', [
+                'mobile_number' => $dto->mobileNumber,
+                'rrn' => $dto->rrn,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->upgradeMinorAccountEndpoint, $requestBody, $headers);
+
+            $response = $this->upgradeMinorAccountClient->post($this->upgradeMinorAccountEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Upgrade Minor Account API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new UpgradeMinorAccountResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Upgrade minor account failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->upgradeMinorAccountEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'upgrade_minor_account',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return UpgradeMinorAccountResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to upgrade minor account',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return UpgradeMinorAccountResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new UpgradeMinorAccountResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Upgrade minor account error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                ],
+                $e
+            );
+
+            return new UpgradeMinorAccountResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Upgrade an account to Level 2.
+     */
+    public function upgradeL2Account(L2AccountUpgradeRequestDTO $dto): L2AccountUpgradeResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Upgrading L2 account', [
+                'mobile_number' => $dto->mobileNumber,
+                'account_id' => $dto->accountId,
+                'rrn' => $dto->rrn,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->l2AccountUpgradeEndpoint, $requestBody, $headers);
+
+            $response = $this->l2AccountUpgradeClient->post($this->l2AccountUpgradeEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (!is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from L2 Account Upgrade API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new L2AccountUpgradeResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'L2 account upgrade failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->l2AccountUpgradeEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'l2_account_upgrade',
+                'onboarding',
+                $dto->toArray(),
+                (string) (auth()->id() ?? 'system'),
+                $dto->rrn
+            );
+
+            return L2AccountUpgradeResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to upgrade L2 account',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                    'rrn' => $dto->rrn,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return L2AccountUpgradeResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new L2AccountUpgradeResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to upgrade L2 account: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'L2 account upgrade error',
+                [
+                    'mobile_number' => $dto->mobileNumber,
+                ],
+                $e
+            );
+
+            return new L2AccountUpgradeResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to upgrade L2 account: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Link account with CNIC, mobile number, and encrypted MPIN (v2).
+     */
+    public function linkAccountV2(AccountLinkingV2RequestDTO $dto): AccountLinkingV2ResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating account linking v2', [
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'trace_no' => $dto->traceNo,
+            ]);
+
+            $this->validateLinkingV2Request($dto);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toApiRequest();
+
+            $this->loggingService->logRequest($this->accountLinkingV2Endpoint, $requestBody, $headers);
+
+            $response = $this->accountLinkingV2Client->post($this->accountLinkingV2Endpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account linking v2 API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AccountLinkingV2ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: 'Account linking v2 failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->accountLinkingV2Endpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $responseDTO = AccountLinkingV2ResponseDTO::fromApiResponse($responseData);
+
+            $linking = $this->accountLinkingRepository->create([
+                'trace_no' => $dto->traceNo,
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'merchant_type' => $dto->merchantType,
+                'request_data' => $dto->toArray(),
+                'response_data' => $responseData,
+                'response_code' => $responseDTO->responseCode,
+                'account_title' => $responseDTO->accountTitle,
+                'account_type' => $responseDTO->accountType,
+                'otp_pin' => $dto->otpPin,
+                'success' => $responseDTO->success,
+            ]);
+
+            $this->auditService->log(
+                'account_linking_v2',
+                'onboarding',
+                $dto->toArray(),
+                auth()->id(),
+                $dto->traceNo
+            );
+
+            Event::dispatch(new AccountLinked($linking, $responseDTO));
+
+            return $responseDTO;
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to link account v2',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'trace_no' => $dto->traceNo,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return new AccountLinkingV2ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    message: $errorResponse['messages'] ?? 'Account linking v2 failed',
+                    errorCode: (string) ($errorResponse['errorcode'] ?? '')
+                );
+            }
+
+            return new AccountLinkingV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Failed to link account v2: ' . $e->getMessage(),
                 errorCode: (string) $e->getCode()
             );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Account linking v2 error',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                ],
+                $e
+            );
+
+            return new AccountLinkingV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                message: 'Account linking v2 failed: ' . $e->getMessage(),
+                errorCode: (string) $e->getCode()
+            );
+        }
+    }
+
+    /**
+     * Upgrade existing account with multi-fingerprint biometrics (v2).
+     */
+    public function upgradeAccountV2(AccountUpgradeV2RequestDTO $dto): AccountUpgradeV2ResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Initiating account upgrade v2', [
+                'cnic' => $dto->cnic,
+                'mobile_no' => $dto->mobileNo,
+                'trace_no' => $dto->traceNo,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->accountUpgradeV2Endpoint, $requestBody, $headers);
+
+            $response = $this->accountUpgradeV2Client->post($this->accountUpgradeV2Endpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from account upgrade v2 API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AccountUpgradeV2ResponseDTO(
+                    success: false,
+                    responseCode: '',
+                    responseDescription: 'Account upgrade v2 failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->accountUpgradeV2Endpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $responseDTO = AccountUpgradeV2ResponseDTO::fromApiResponse($responseData);
+
+            $this->auditService->log(
+                'account_upgrade_v2',
+                'onboarding',
+                $requestBody,
+                (string) (auth()->id() ?? 'system'),
+                $dto->traceNo
+            );
+
+            Event::dispatch(new AccountUpgraded($requestBody, $responseDTO));
+
+            return $responseDTO;
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed to upgrade account v2',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                    'trace_no' => $dto->traceNo,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AccountUpgradeV2ResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AccountUpgradeV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Failed to upgrade account v2: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Account upgrade v2 error',
+                [
+                    'cnic' => $dto->cnic,
+                    'mobile_no' => $dto->mobileNo,
+                ],
+                $e
+            );
+
+            return new AccountUpgradeV2ResponseDTO(
+                success: false,
+                responseCode: '',
+                responseDescription: 'Account upgrade v2 failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Authenticate an agent session.
+     */
+    public function agentLogin(AgentLoginRequestDTO $dto): AgentLoginResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent login', [
+                'uid' => $dto->uid,
+                'udid' => $dto->udid,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentLoginEndpoint, $requestBody, $headers);
+
+            $response = $this->agentLoginClient->post($this->agentLoginEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Login API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentLoginResponseDTO(
+                    success: false,
+                    message: 'Agent login failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentLoginEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_login',
+                'onboarding',
+                ['uid' => $dto->uid, 'udid' => $dto->udid],
+                (string) (auth()->id() ?? 'system'),
+                $dto->uid
+            );
+
+            return AgentLoginResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent login',
+                [
+                    'uid' => $dto->uid,
+                    'udid' => $dto->udid,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentLoginResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentLoginResponseDTO(
+                success: false,
+                message: 'Failed agent login: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent login error',
+                [
+                    'uid' => $dto->uid,
+                ],
+                $e
+            );
+
+            return new AgentLoginResponseDTO(
+                success: false,
+                message: 'Agent login failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Verify a customer account via an authenticated agent session.
+     */
+    public function agentAccountVerification(AgentAccountVerificationRequestDTO $dto): AgentAccountVerificationResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent account verification', [
+                'agent_id' => $dto->agentId,
+                'customer_mobile' => $dto->customerMobile,
+                'cnic' => $dto->cnic,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentAccountVerificationEndpoint, $requestBody, $headers);
+
+            $response = $this->agentAccountVerificationClient->post($this->agentAccountVerificationEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Account Verification API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentAccountVerificationResponseDTO(
+                    success: false,
+                    message: 'Agent account verification failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentAccountVerificationEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_account_verification',
+                'onboarding',
+                [
+                    'agent_id' => $dto->agentId,
+                    'customer_mobile' => $dto->customerMobile,
+                    'cnic' => $dto->cnic,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                (string) $dto->agentId
+            );
+
+            return AgentAccountVerificationResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent account verification',
+                [
+                    'agent_id' => $dto->agentId,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentAccountVerificationResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentAccountVerificationResponseDTO(
+                success: false,
+                message: 'Failed agent account verification: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent account verification error',
+                [
+                    'agent_id' => $dto->agentId,
+                ],
+                $e
+            );
+
+            return new AgentAccountVerificationResponseDTO(
+                success: false,
+                message: 'Agent account verification failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Inquire cash deposit fees and totals before an agent cash deposit.
+     */
+    public function agentCashDepositInquiry(AgentCashDepositInquiryRequestDTO $dto): AgentCashDepositInquiryResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent cash deposit inquiry', [
+                'agent_mobile' => $dto->agentMobile,
+                'customer_mobile' => $dto->customerMobile,
+                'transaction_amount' => $dto->transactionAmount,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentCashDepositInquiryEndpoint, $requestBody, $headers);
+
+            $response = $this->agentCashDepositInquiryClient->post($this->agentCashDepositInquiryEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Cash Deposit Inquiry API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentCashDepositInquiryResponseDTO(
+                    success: false,
+                    message: 'Agent cash deposit inquiry failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentCashDepositInquiryEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_cash_deposit_inquiry',
+                'onboarding',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                    'transaction_amount' => $dto->transactionAmount,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentCashDepositInquiryResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent cash deposit inquiry',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentCashDepositInquiryResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentCashDepositInquiryResponseDTO(
+                success: false,
+                message: 'Failed agent cash deposit inquiry: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent cash deposit inquiry error',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            return new AgentCashDepositInquiryResponseDTO(
+                success: false,
+                message: 'Agent cash deposit inquiry failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Execute an agent cash deposit.
+     */
+    public function agentCashDeposit(AgentCashDepositRequestDTO $dto): AgentCashDepositResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent cash deposit', [
+                'agent_mobile' => $dto->agentMobile,
+                'customer_mobile' => $dto->customerMobile,
+                'transaction_amount' => $dto->transactionAmount,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentCashDepositEndpoint, $requestBody, $headers);
+
+            $response = $this->agentCashDepositClient->post($this->agentCashDepositEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Cash Deposit API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentCashDepositResponseDTO(
+                    success: false,
+                    message: 'Agent cash deposit failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentCashDepositEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_cash_deposit',
+                'onboarding',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                    'cnic' => $dto->cnic,
+                    'transaction_amount' => $dto->transactionAmount,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentCashDepositResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent cash deposit',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentCashDepositResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentCashDepositResponseDTO(
+                success: false,
+                message: 'Failed agent cash deposit: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent cash deposit error',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            return new AgentCashDepositResponseDTO(
+                success: false,
+                message: 'Agent cash deposit failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Validate linking request.
+     */
+    protected function validateLinkingV2Request(AccountLinkingV2RequestDTO $dto): void
+    {
+        if (empty($dto->cnic) || strlen($dto->cnic) !== 13) {
+            throw new \InvalidArgumentException('CNIC must be exactly 13 characters');
+        }
+
+        if (empty($dto->mobileNo) || strlen($dto->mobileNo) !== 11) {
+            throw new \InvalidArgumentException('Mobile number must be exactly 11 characters');
+        }
+
+        if (empty($dto->merchantType) || strlen($dto->merchantType) !== 4) {
+            throw new \InvalidArgumentException('MerchantType must be exactly 4 characters');
+        }
+
+        if (empty($dto->traceNo) || strlen($dto->traceNo) !== 6) {
+            throw new \InvalidArgumentException('TraceNo must be exactly 6 characters');
+        }
+
+        if (empty($dto->dateTime) || strlen($dto->dateTime) !== 14) {
+            throw new \InvalidArgumentException('DateTime must be exactly 14 characters (YYYYMMDDHHmmss)');
+        }
+
+        if (empty($dto->companyName) || strlen($dto->companyName) !== 4) {
+            throw new \InvalidArgumentException('CompanyName must be exactly 4 characters');
+        }
+
+        if (empty($dto->transactionType) || strlen($dto->transactionType) !== 2) {
+            throw new \InvalidArgumentException('TransactionType must be exactly 2 characters');
+        }
+
+        if (empty($dto->reserved1) || strlen($dto->reserved1) !== 2) {
+            throw new \InvalidArgumentException('Reserved1 must be exactly 2 characters');
+        }
+
+        if ($dto->mPin === '') {
+            throw new \InvalidArgumentException('mPin cannot be empty');
+        }
+
+        if ($dto->confirmMpin === '') {
+            throw new \InvalidArgumentException('confirmMpin cannot be empty');
         }
     }
 
@@ -2359,479 +3698,5 @@ class OnboardingService implements OnboardingServiceInterface
             throw new \InvalidArgumentException('Date of birth is required');
         }
     }
-    /**
-     * Open minor account.
-     */
-    public function minorAccountOpening(MinorAccountOpeningRequestDTO $dto): MinorAccountOpeningResponseDTO
-    {
-        try {
-            $this->loggingService->logInfo('Initiating minor account opening', [
-                'rrn' => $dto->rrn,
-                'cnic' => $dto->cnic,
-                'mobile_number' => $dto->mobileNumber,
-            ]);
-
-            // Get authentication token
-            $token = $this->authService->authenticate();
-            $config = config('zindagi-zconnect');
-
-            // Prepare headers
-            $headers = [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'clientId' => $config['auth']['client_id'],
-                'clientSecret' => $token,
-                'organizationId' => $config['auth']['organization_id'] ?? '223',
-            ];
-
-            // Prepare request body
-            $requestBody = $dto->toArray();
-
-            // Log request
-            $this->loggingService->logRequest($this->minorAccountOpeningEndpoint, $requestBody, $headers);
-
-            // Make API request
-            $response = $this->minorAccountOpeningClient->post($this->minorAccountOpeningEndpoint, [
-                'headers' => $headers,
-                'json' => $requestBody,
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-            $responseData = json_decode($responseBody, true);
-
-            // Handle null or invalid JSON
-            if (!is_array($responseData)) {
-                $this->loggingService->logError(
-                    'Invalid response from Minor Account Opening API',
-                    ['response_body' => $responseBody],
-                    new \RuntimeException('Invalid JSON response')
-                );
-
-                return new MinorAccountOpeningResponseDTO(
-                    success: false,
-                    responseCode: '',
-                    responseDescription: 'Minor Account Opening failed: Invalid response from API'
-                );
-            }
-
-            // Log response
-            $this->loggingService->logResponse(
-                $this->minorAccountOpeningEndpoint,
-                $responseData,
-                $response->getStatusCode()
-            );
-
-            // Audit log
-            $this->auditService->log(
-                'minor_account_opening',
-                'onboarding',
-                $dto->toArray(),
-                (string) (auth()->id() ?? 'system'),
-                $dto->rrn
-            );
-
-            return MinorAccountOpeningResponseDTO::fromArray($responseData);
-        } catch (GuzzleException $e) {
-            $this->loggingService->logError(
-                'Failed to open minor account',
-                [
-                    'rrn' => $dto->rrn,
-                    'cnic' => $dto->cnic,
-                ],
-                $e
-            );
-
-            // Try to parse error response
-            $errorResponse = null;
-            if ($e->hasResponse()) {
-                $errorBody = $e->getResponse()->getBody()->getContents();
-                $errorResponse = json_decode($errorBody, true);
-            }
-
-            if ($errorResponse) {
-                return new MinorAccountOpeningResponseDTO(
-                    success: false,
-                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
-                    responseDescription: $errorResponse['messages'] ?? 'Failed to open minor account',
-                    originalResponse: $errorResponse
-                );
-            }
-
-            return new MinorAccountOpeningResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
-            );
-        } catch (\Exception $e) {
-            $this->loggingService->logError(
-                'Minor Account Opening error',
-                [
-                    'rrn' => $dto->rrn,
-                ],
-                $e
-            );
-
-            return new MinorAccountOpeningResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to open minor account: ' . $e->getMessage(),
-            );
-        }
-    }
-    /**
-     * Verify minor account.
-     */
-    public function minorAccountVerification(MinorAccountVerificationRequestDTO $dto): MinorAccountVerificationResponseDTO
-    {
-        try {
-            $this->loggingService->logInfo('Initiating minor account verification', [
-                'rrn' => $dto->rrn,
-                'cnic' => $dto->cnic,
-                'mobile_number' => $dto->mobileNumber,
-            ]);
-
-            // Get authentication token
-            $token = $this->authService->authenticate();
-            $config = config('zindagi-zconnect');
-
-            // Prepare headers
-            $headers = [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'clientId' => $config['auth']['client_id'],
-                'clientSecret' => $token,
-                'organizationId' => $config['auth']['organization_id'] ?? '223',
-            ];
-
-            // Prepare request body
-            $requestBody = $dto->toArray();
-
-            // Log request
-            $this->loggingService->logRequest($this->minorAccountVerificationEndpoint, $requestBody, $headers);
-
-            // Make API request
-            $response = $this->minorAccountVerificationClient->post($this->minorAccountVerificationEndpoint, [
-                'headers' => $headers,
-                'json' => $requestBody,
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-            $responseData = json_decode($responseBody, true);
-
-            // Handle null or invalid JSON
-            if (!is_array($responseData)) {
-                $this->loggingService->logError(
-                    'Invalid response from Minor Account Verification API',
-                    ['response_body' => $responseBody],
-                    new \RuntimeException('Invalid JSON response')
-                );
-
-                return new MinorAccountVerificationResponseDTO(
-                    success: false,
-                    responseCode: '',
-                    responseDescription: 'Minor Account Verification failed: Invalid response from API'
-                );
-            }
-
-            // Log response
-            $this->loggingService->logResponse(
-                $this->minorAccountVerificationEndpoint,
-                $responseData,
-                $response->getStatusCode()
-            );
-
-            // Audit log
-            $this->auditService->log(
-                'minor_account_verification',
-                'onboarding',
-                $dto->toArray(),
-                (string) (auth()->id() ?? 'system'),
-                $dto->rrn
-            );
-
-            return MinorAccountVerificationResponseDTO::fromArray($responseData);
-        } catch (GuzzleException $e) {
-            $this->loggingService->logError(
-                'Failed to verify minor account',
-                [
-                    'rrn' => $dto->rrn,
-                    'cnic' => $dto->cnic,
-                ],
-                $e
-            );
-
-            // Try to parse error response
-            $errorResponse = null;
-            if ($e->hasResponse()) {
-                $errorBody = $e->getResponse()->getBody()->getContents();
-                $errorResponse = json_decode($errorBody, true);
-            }
-
-            if ($errorResponse) {
-                return new MinorAccountVerificationResponseDTO(
-                    success: false,
-                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
-                    responseDescription: $errorResponse['messages'] ?? 'Failed to verify minor account',
-                    originalResponse: $errorResponse
-                );
-            }
-
-            return new MinorAccountVerificationResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to verify minor account: ' . $e->getMessage(),
-            );
-        } catch (\Exception $e) {
-            $this->loggingService->logError(
-                'Minor Account Verification error',
-                [
-                    'rrn' => $dto->rrn,
-                ],
-                $e
-            );
-
-            return new MinorAccountVerificationResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to verify minor account: ' . $e->getMessage(),
-            );
-        }
-    }
-    /**
-     * Upgrade minor account.
-     */
-    public function upgradeMinorAccount(UpgradeMinorAccountRequestDTO $dto): UpgradeMinorAccountResponseDTO
-    {
-        try {
-            $this->loggingService->logInfo('Initiating upgrade minor account', [
-                'rrn' => $dto->rrn,
-                'mobile_number' => $dto->mobileNumber,
-            ]);
-
-            // Get authentication token
-            $token = $this->authService->authenticate();
-            $config = config('zindagi-zconnect');
-
-            // Prepare headers
-            $headers = [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'clientId' => $config['auth']['client_id'],
-                'clientSecret' => $token,
-                'organizationId' => $config['auth']['organization_id'] ?? '223',
-            ];
-
-            // Prepare request body
-            $requestBody = $dto->toArray();
-
-            // Log request
-            $this->loggingService->logRequest($this->upgradeMinorAccountEndpoint, $requestBody, $headers);
-
-            // Make API request
-            $response = $this->upgradeMinorAccountClient->post($this->upgradeMinorAccountEndpoint, [
-                'headers' => $headers,
-                'json' => $requestBody,
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-            $responseData = json_decode($responseBody, true);
-
-            // Handle null or invalid JSON
-            if (!is_array($responseData)) {
-                $this->loggingService->logError(
-                    'Invalid response from Upgrade Minor Account API',
-                    ['response_body' => $responseBody],
-                    new \RuntimeException('Invalid JSON response')
-                );
-
-                return new UpgradeMinorAccountResponseDTO(
-                    success: false,
-                    responseCode: '',
-                    responseDescription: 'Upgrade Minor Account failed: Invalid response from API'
-                );
-            }
-
-            // Log response
-            $this->loggingService->logResponse(
-                $this->upgradeMinorAccountEndpoint,
-                $responseData,
-                $response->getStatusCode()
-            );
-
-            // Audit log
-            $this->auditService->log(
-                'upgrade_minor_account',
-                'onboarding',
-                $dto->toArray(),
-                (string) (auth()->id() ?? 'system'),
-                $dto->rrn
-            );
-
-            return UpgradeMinorAccountResponseDTO::fromArray($responseData);
-        } catch (GuzzleException $e) {
-            $this->loggingService->logError(
-                'Failed to upgrade minor account',
-                [
-                    'rrn' => $dto->rrn,
-                ],
-                $e
-            );
-
-            // Try to parse error response
-            $errorResponse = null;
-            if ($e->hasResponse()) {
-                $errorBody = $e->getResponse()->getBody()->getContents();
-                $errorResponse = json_decode($errorBody, true);
-            }
-
-            if ($errorResponse) {
-                return new UpgradeMinorAccountResponseDTO(
-                    success: false,
-                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
-                    responseDescription: $errorResponse['messages'] ?? 'Failed to upgrade minor account',
-                    originalResponse: $errorResponse
-                );
-            }
-
-            return new UpgradeMinorAccountResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
-            );
-        } catch (\Exception $e) {
-            $this->loggingService->logError(
-                'Upgrade Minor Account error',
-                [
-                    'rrn' => $dto->rrn,
-                ],
-                $e
-            );
-
-            return new UpgradeMinorAccountResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to upgrade minor account: ' . $e->getMessage(),
-            );
-        }
-    }
-    /**
-     * Get account statement V2.
-     */
-    public function accountStatementV2(AccountStatementV2RequestDTO $dto): AccountStatementV2ResponseDTO
-    {
-        try {
-            $this->loggingService->logInfo('Initiating account statement V2 fetch', [
-                'account_number' => $dto->accountNumber,
-                'from_date' => $dto->fromDate,
-                'to_date' => $dto->toDate,
-            ]);
-
-            // Get authentication token
-            $token = $this->authService->authenticate();
-            $config = config('zindagi-zconnect');
-
-            // Prepare headers
-            $headers = [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'clientId' => $config['auth']['client_id'],
-                'clientSecret' => $token,
-                'organizationId' => $config['auth']['organization_id'] ?? '223',
-            ];
-
-            // Prepare request body
-            $requestBody = $dto->toArray();
-
-            // Log request
-            $this->loggingService->logRequest($this->accountStatementV2Endpoint, $requestBody, $headers);
-
-            // Make API request
-            $response = $this->accountStatementV2Client->post($this->accountStatementV2Endpoint, [
-                'headers' => $headers,
-                'json' => $requestBody,
-            ]);
-
-            $responseBody = $response->getBody()->getContents();
-            $responseData = json_decode($responseBody, true);
-
-            // Handle null or invalid JSON
-            if (!is_array($responseData)) {
-                $this->loggingService->logError(
-                    'Invalid response from Account Statement V2 API',
-                    ['response_body' => $responseBody],
-                    new \RuntimeException('Invalid JSON response')
-                );
-
-                return new AccountStatementV2ResponseDTO(
-                    success: false,
-                    responseCode: '',
-                    responseDescription: 'Account Statement V2 failed: Invalid response from API'
-                );
-            }
-
-            // Log response
-            $this->loggingService->logResponse(
-                $this->accountStatementV2Endpoint,
-                $responseData,
-                $response->getStatusCode()
-            );
-
-            // Audit log
-            $this->auditService->log(
-                'account_statement_v2',
-                'onboarding',
-                $dto->toArray(),
-                (string) (auth()->id() ?? 'system'),
-                $dto->accountNumber
-            );
-
-            return AccountStatementV2ResponseDTO::fromArray($responseData);
-        } catch (GuzzleException $e) {
-            $this->loggingService->logError(
-                'Failed to fetch account statement V2',
-                [
-                    'account_number' => $dto->accountNumber,
-                ],
-                $e
-            );
-
-            // Try to parse error response
-            $errorResponse = null;
-            if ($e->hasResponse()) {
-                $errorBody = $e->getResponse()->getBody()->getContents();
-                $errorResponse = json_decode($errorBody, true);
-            }
-
-            if ($errorResponse) {
-                return new AccountStatementV2ResponseDTO(
-                    success: false,
-                    responseCode: (string) ($errorResponse['errorcode'] ?? ''),
-                    responseDescription: $errorResponse['messages'] ?? 'Failed to fetch account statement V2',
-                    originalResponse: $errorResponse
-                );
-            }
-
-            return new AccountStatementV2ResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to fetch account statement V2: ' . $e->getMessage(),
-            );
-        } catch (\Exception $e) {
-            $this->loggingService->logError(
-                'Account Statement V2 error',
-                [
-                    'account_number' => $dto->accountNumber,
-                ],
-                $e
-            );
-
-            return new AccountStatementV2ResponseDTO(
-                success: false,
-                responseCode: (string) $e->getCode(),
-                responseDescription: 'Failed to fetch account statement V2: ' . $e->getMessage(),
-            );
-        }
-    }
-
 }
 

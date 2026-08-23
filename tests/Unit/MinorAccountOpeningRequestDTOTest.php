@@ -78,6 +78,38 @@ class MinorAccountOpeningRequestDTOTest extends TestCase
         $this->assertEquals('1255822445001', $req['RRN']);
         $this->assertEquals('Ahsan', $req['AccountTilte']); // Keeping typo as per DTO/Docs
         $this->assertEquals('Nusrat', $req['MotherMedianName']);
+        $this->assertEquals('Lahore', $req['PlaceOfbirth']);
+        $this->assertArrayHasKey('minorCutomerPic', $req);
+    }
+
+    public function test_from_array_accepts_snake_case(): void
+    {
+        $dto = MinorAccountOpeningRequestDTO::fromArray([
+            'rrn' => '1255822445001',
+            'date_time' => '11172022',
+            'account_title' => 'Ahsan',
+            'cnic' => '3520243953533',
+            'issuance_date' => '2020-08-12',
+            'mobile_number' => '03200460403',
+            'mother_maiden_name' => 'Nusrat',
+            'father_name' => 'Javed',
+            'place_of_birth' => 'Lahore',
+            'date_of_birth' => '1994-09-30',
+            'address' => 'Gulberg 3 lahore',
+            'nic_expiry' => '2025-03-30',
+            'parent_cnic_pic' => '',
+            'snic_pic' => '',
+            'minor_customer_pic' => '',
+            'father_mother_mobile_number' => '03734642041',
+            'father_cnic' => '3570730079593',
+            'father_cnic_issuance_date' => '2020-08-25',
+            'father_cnic_expiry_date' => '2025-03-30',
+            'mother_cnic' => '3520130109590',
+            'email' => 'test@example.com',
+        ]);
+
+        $this->assertEquals('Ahsan', $dto->accountTitle);
+        $this->assertEquals('03200460403', $dto->mobileNumber);
     }
 
     /**

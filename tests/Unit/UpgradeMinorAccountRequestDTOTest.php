@@ -40,6 +40,46 @@ class UpgradeMinorAccountRequestDTOTest extends TestCase
         $this->assertArrayHasKey('upgradeMinorAccountReq', $array);
         $req = $array['upgradeMinorAccountReq'];
         $this->assertEquals('0090909998881', $req['Rrn']); // Case sensitive check as per extracted fields
+        $this->assertArrayHasKey('minorCutomerPic', $req);
+        $this->assertEquals('NOVA', $req['ChannelId']);
+    }
+
+    public function test_from_array_accepts_snake_case(): void
+    {
+        $dto = UpgradeMinorAccountRequestDTO::fromArray([
+            'rrn' => '0090909998881',
+            'date_time' => '20232311191919',
+            'mobile_number' => '03200460403',
+            'b_form_pic' => 'base64pic',
+            'channel_id' => 'LEND',
+        ]);
+
+        $this->assertEquals('base64pic', $dto->bFormPic);
+        $this->assertEquals('LEND', $dto->channelId);
+    }
+
+    public function test_validation_fails_empty_datetime(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('DateTime cannot be empty');
+
+        new UpgradeMinorAccountRequestDTO(
+            rrn: '0090909998881',
+            dateTime: '',
+            mobileNumber: '03200460403'
+        );
+    }
+
+    public function test_validation_fails_empty_mobile_number(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Mobile Number cannot be empty');
+
+        new UpgradeMinorAccountRequestDTO(
+            rrn: '0090909998881',
+            dateTime: '20232311191919',
+            mobileNumber: ''
+        );
     }
 
     /**

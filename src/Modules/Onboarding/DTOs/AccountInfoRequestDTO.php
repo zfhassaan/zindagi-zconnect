@@ -19,6 +19,20 @@ class AccountInfoRequestDTO
     }
 
     /**
+     * Create DTO from an associative array (snake_case or API field names).
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            mobileNumber: $data['mobile_number'] ?? $data['MobileNumber'] ?? '',
+            dateTime: $data['date_time'] ?? $data['DateTime'] ?? '',
+            rrn: $data['rrn'] ?? $data['Rrn'] ?? '',
+            channelId: $data['channel_id'] ?? $data['ChannelId'] ?? 'Lending',
+            terminalId: $data['terminal_id'] ?? $data['TerminalId'] ?? 'Lending',
+        );
+    }
+
+    /**
      * Validate DTO data.
      *
      * @throws InvalidArgumentException

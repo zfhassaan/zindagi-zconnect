@@ -134,6 +134,30 @@ return [
                 'merchant_type' => env('ZINDAGI_ZCONNECT_MERCHANT_TYPE', '0088'),
                 'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
             ],
+            'account_linking_v2' => [
+                'endpoint' => '/api/v2/acountlinking',
+                'merchant_type' => env('ZINDAGI_ZCONNECT_MERCHANT_TYPE', '0088'),
+                'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
+                'transaction_type' => env('ZINDAGI_ZCONNECT_ACCOUNT_LINKING_TRANSACTION_TYPE', '01'),
+                'reserved1' => env('ZINDAGI_ZCONNECT_ACCOUNT_LINKING_V2_RESERVED1', '01'),
+            ],
+            'account_upgrade_v2' => [
+                'endpoint' => '/api/v3/upgradeaccount',
+                'merchant_type' => env('ZINDAGI_ZCONNECT_MERCHANT_TYPE', '0088'),
+                'company_name' => env('ZINDAGI_ZCONNECT_COMPANY_NAME', 'NOVA'),
+            ],
+            'agent_login' => [
+                'endpoint' => '/api/v1/loginagentmate',
+            ],
+            'agent_account_verification' => [
+                'endpoint' => '/api/v1/accountverificationagentmate',
+            ],
+            'agent_cash_deposit_inquiry' => [
+                'endpoint' => '/api/v1/agentcashdepositinquiry',
+            ],
+            'agent_cash_deposit' => [
+                'endpoint' => '/api/v1/agentcashdeposit',
+            ],
             'l2_account_fields' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountFields',
             ],
@@ -152,6 +176,9 @@ return [
             'account_statement_v2' => [
                  'endpoint' => '/api/v2/digiWalletStatement',
             ],
+            'l2_account_upgrade' => [
+                'endpoint' => '/api/v1/l2Account/l2AccountUpgrade',
+            ],
             'get_l2_discrepant_data' => [
                 'endpoint' => '/api/v1/getL2AccountUpgradeDiscrepant',
             ],
@@ -168,8 +195,8 @@ return [
                 'endpoint' => '/api/v1/l2Account/motherName',
             ],
             'get_account_info' => [
-                'endpoint' => '/api/v1/accountInfo'
-            ]
+                'endpoint' => '/api/v1/accountInfo',
+            ],
         ],
         'inquiry' => [
             'enabled' => env('ZINDAGI_ZCONNECT_INQUIRY_ENABLED', true),

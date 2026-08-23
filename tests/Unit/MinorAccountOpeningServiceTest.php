@@ -8,6 +8,8 @@ use Tests\TestCase;
 use Mockery;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\RequestInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\OnboardingService;
@@ -224,5 +226,122 @@ class MinorAccountOpeningServiceTest extends TestCase
         
         $this->assertFalse($response->success);
         $this->assertEquals('24', $response->responseCode);
+        $this->assertEquals('CNIC is already in use', $response->responseDescription);
+    }
+
+    public function test_minor_account_opening_with_invalid_json(): void
+    {
+        $mockClient = Mockery::mock(Client::class);
+        $mockClient->shouldReceive('post')->once()->andReturn(new Response(200, [], 'not-json'));
+
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockAuthService->shouldReceive('authenticate')->once()->andReturn('test_access_token');
+
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logRequest')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
+
+        $service = $this->makeService($mockAuthService, $mockLoggingService, Mockery::mock(AuditServiceInterface::class), $mockClient);
+
+        $response = $service->minorAccountOpening($this->requestDto());
+
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('Invalid response from API', $response->responseDescription);
+    }
+
+    public function test_minor_account_opening_with_network_error(): void
+    {
+        $mockClient = Mockery::mock(Client::class);
+        $mockClient->shouldReceive('post')->once()->andThrow(new RequestException(
+            'Connection timeout',
+            Mockery::mock(RequestInterface::class)
+        ));
+
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockAuthService->shouldReceive('authenticate')->once()->andReturn('test_access_token');
+
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logRequest')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
+
+        $service = $this->makeService($mockAuthService, $mockLoggingService, Mockery::mock(AuditServiceInterface::class), $mockClient);
+
+        $response = $service->minorAccountOpening($this->requestDto());
+
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('Failed to open minor account', $response->responseDescription);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
+    private function requestDto(): MinorAccountOpeningRequestDTO
+    {
+        return new MinorAccountOpeningRequestDTO(
+            rrn: '1255822445001',
+            dateTime: '11172022',
+            accountTitle: 'Ahsan',
+            cnic: '3520243953533',
+            issuanceDate: '2020-08-12',
+            mobileNumber: '03200460403',
+            motherMaidenName: 'Nusrat',
+            fatherName: 'Javed',
+            placeOfBirth: 'Lahore',
+            dateOfBirth: '1994-09-30',
+            address: 'Gulberg 3 lahore',
+            nicExpiry: '2025-03-30',
+            parentCnicPic: '',
+            snicPic: '',
+            minorCustomerPic: '',
+            fatherMotherMobileNumber: '03734642041',
+            fatherCnic: '3570730079593',
+            fatherCnicIssuanceDate: '2020-08-25',
+            fatherCnicExpiryDate: '2025-03-30',
+            motherCnic: '3520130109590',
+            email: 'test@example.com'
+        );
+    }
+
+    private function makeService($auth, $logging, $audit, Client $client): OnboardingService
+    {
+        config([
+            'zindagi-zconnect' => [
+                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
+                'auth' => [
+                    'client_id' => 'test_id',
+                    'organization_id' => '223',
+                ],
+                'modules' => [
+                    'onboarding' => [
+                        'minor_account_opening' => [
+                            'endpoint' => '/api/v1/M0AccountOpening',
+                        ],
+                    ],
+                ],
+                'security' => ['verify_ssl' => true],
+            ],
+        ]);
+
+        $service = new OnboardingService(
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
+            $auth,
+            $logging,
+            $audit,
+            Mockery::mock(OnboardingRepositoryInterface::class),
+            Mockery::mock(AccountVerificationRepositoryInterface::class),
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(AccountOpeningRepositoryInterface::class)
+        );
+
+        $property = (new \ReflectionClass($service))->getProperty('minorAccountOpeningClient');
+        $property->setAccessible(true);
+        $property->setValue($service, $client);
+
+        return $service;
     }
 }

@@ -34,6 +34,26 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountInfoResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2RequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountStatementV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountOpeningResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\MinorAccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\L2AccountUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeV2RequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeV2ResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentLoginRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentLoginResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountVerificationResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -182,5 +202,55 @@ interface OnboardingServiceInterface
      * @return AccountStatementV2ResponseDTO
      */
     public function accountStatementV2(AccountStatementV2RequestDTO $dto): AccountStatementV2ResponseDTO;
+
+    /**
+     * Open a minor (M0) account.
+     */
+    public function minorAccountOpening(MinorAccountOpeningRequestDTO $dto): MinorAccountOpeningResponseDTO;
+
+    /**
+     * Verify a minor (M0) account.
+     */
+    public function minorAccountVerification(MinorAccountVerificationRequestDTO $dto): MinorAccountVerificationResponseDTO;
+
+    /**
+     * Upgrade a minor (M0) account.
+     */
+    public function upgradeMinorAccount(UpgradeMinorAccountRequestDTO $dto): UpgradeMinorAccountResponseDTO;
+
+    /**
+     * Upgrade an account to Level 2.
+     */
+    public function upgradeL2Account(L2AccountUpgradeRequestDTO $dto): L2AccountUpgradeResponseDTO;
+
+    /**
+     * Link account with CNIC, mobile number, and encrypted MPIN (v2).
+     */
+    public function linkAccountV2(AccountLinkingV2RequestDTO $dto): AccountLinkingV2ResponseDTO;
+
+    /**
+     * Upgrade existing account with multi-fingerprint biometrics (v2).
+     */
+    public function upgradeAccountV2(AccountUpgradeV2RequestDTO $dto): AccountUpgradeV2ResponseDTO;
+
+    /**
+     * Authenticate an agent session.
+     */
+    public function agentLogin(AgentLoginRequestDTO $dto): AgentLoginResponseDTO;
+
+    /**
+     * Verify a customer account via an authenticated agent session.
+     */
+    public function agentAccountVerification(AgentAccountVerificationRequestDTO $dto): AgentAccountVerificationResponseDTO;
+
+    /**
+     * Inquire cash deposit fees and totals before an agent cash deposit.
+     */
+    public function agentCashDepositInquiry(AgentCashDepositInquiryRequestDTO $dto): AgentCashDepositInquiryResponseDTO;
+
+    /**
+     * Execute an agent cash deposit.
+     */
+    public function agentCashDeposit(AgentCashDepositRequestDTO $dto): AgentCashDepositResponseDTO;
 }
 

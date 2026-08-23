@@ -8,6 +8,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Models\AccountLinking;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountLinkingV2ResponseDTO;
 
 class AccountLinked
 {
@@ -15,7 +16,7 @@ class AccountLinked
 
     public function __construct(
         public AccountLinking $linking,
-        public AccountLinkingResponseDTO $response
+        public AccountLinkingResponseDTO|AccountLinkingV2ResponseDTO $response
     ) {
     }
 }

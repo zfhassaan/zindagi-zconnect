@@ -5,6 +5,9 @@ composer.lock
 .phpunit.result.cache
 .phpunit.cache
 
+# Local working notes — do not publish
+/docs/
+
 # Ignore test output files
 test_output.txt
 

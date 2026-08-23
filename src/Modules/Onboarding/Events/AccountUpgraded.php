@@ -7,6 +7,7 @@ namespace zfhassaan\ZindagiZconnect\Modules\Onboarding\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AccountUpgradeV2ResponseDTO;
 
 class AccountUpgraded
 {
@@ -17,7 +18,7 @@ class AccountUpgraded
      */
     public function __construct(
         public array $requestData,
-        public AccountUpgradeResponseDTO $response
+        public AccountUpgradeResponseDTO|AccountUpgradeV2ResponseDTO $response
     ) {
     }
 }

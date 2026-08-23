@@ -22,9 +22,19 @@ class AccountInfoResponseDTO
         public ?string $accountStatusCode = null,
         public ?string $registrationTypeCode = null,
         public ?string $responseDescription = null,
+        public ?string $hashData = null,
         public ?string $message = null,
-        public ?string $errorCode = null
+        public ?string $errorCode = null,
+        public array $originalResponse = []
     ) {
+    }
+
+    /**
+     * Create DTO from API response array.
+     */
+    public static function fromArray(array $data): self
+    {
+        return self::fromApiResponse($data);
     }
 
     /**
@@ -32,36 +42,47 @@ class AccountInfoResponseDTO
      */
     public static function fromApiResponse(array $response): self
     {
-        // Handle success response
-        if (isset($response['accountInfoRes'])) {
-            $data = $response['accountInfoRes'];
-            
+        $hasWrapper = isset($response['accountInfoRes']) && is_array($response['accountInfoRes']);
+        $isGatewayError = isset($response['messages']) || isset($response['errorcode']);
+
+        if ($isGatewayError && ! $hasWrapper) {
+            $errorCode = isset($response['errorcode']) ? (string) $response['errorcode'] : null;
+
             return new self(
-                success: ($data['ResponseCode'] ?? '') === '00',
-                responseCode: $data['ResponseCode'] ?? '',
-                dateOfBirth: $data['DateOfBirth'] ?? null,
-                responseDateTime: $data['ResponseDateTime'] ?? null,
-                accountLevelCode: $data['AccountLevelCode'] ?? null,
-                email: $data['Email'] ?? null,
-                cnic: $data['Cnic'] ?? null,
-                segment: $data['Segment'] ?? null,
-                rrn: $data['Rrn'] ?? null,
-                accountNumber: $data['AccountNumber'] ?? null,
-                accountNatureCode: $data['AccountNatureCode'] ?? null,
-                accountTitle: $data['AccountTitle'] ?? null,
-                accountStatusCode: $data['AccountStatusCode'] ?? null,
-                registrationTypeCode: $data['RegistrationTypeCode'] ?? null,
-                responseDescription: $data['ResponseDescription'] ?? null,
-                message: $data['ResponseDescription'] ?? null
+                success: false,
+                responseCode: $errorCode ?? (string) ($response['ResponseCode'] ?? ''),
+                message: is_string($response['messages'] ?? null)
+                    ? $response['messages']
+                    : ($response['ResponseDescription'] ?? 'Unknown error'),
+                errorCode: $errorCode,
+                originalResponse: $response
             );
         }
 
-        // Handle error response
+        $data = $hasWrapper ? $response['accountInfoRes'] : $response;
+        $responseCode = (string) ($data['ResponseCode'] ?? '');
+        $responseDescription = $data['ResponseDescription'] ?? null;
+
         return new self(
-            success: false,
-            responseCode: '',
-            message: $response['messages'] ?? 'Unknown error',
-            errorCode: $response['errorcode'] ?? null
+            success: $responseCode === '00',
+            responseCode: $responseCode,
+            dateOfBirth: $data['DateOfBirth'] ?? null,
+            responseDateTime: $data['ResponseDateTime'] ?? null,
+            accountLevelCode: $data['AccountLevelCode'] ?? null,
+            email: $data['Email'] ?? null,
+            cnic: $data['Cnic'] ?? null,
+            segment: $data['Segment'] ?? null,
+            rrn: $data['Rrn'] ?? null,
+            accountNumber: $data['AccountNumber'] ?? null,
+            accountNatureCode: $data['AccountNatureCode'] ?? null,
+            accountTitle: $data['AccountTitle'] ?? null,
+            accountStatusCode: $data['AccountStatusCode'] ?? null,
+            registrationTypeCode: $data['RegistrationTypeCode'] ?? null,
+            responseDescription: $responseDescription,
+            hashData: $data['HashData'] ?? null,
+            message: $responseDescription,
+            errorCode: $responseCode !== '00' && $responseCode !== '' ? $responseCode : null,
+            originalResponse: $response
         );
     }
 
@@ -86,9 +107,9 @@ class AccountInfoResponseDTO
             'account_status_code' => $this->accountStatusCode,
             'registration_type_code' => $this->registrationTypeCode,
             'response_description' => $this->responseDescription,
+            'hash_data' => $this->hashData,
             'message' => $this->message,
             'error_code' => $this->errorCode,
         ];
     }
 }
-

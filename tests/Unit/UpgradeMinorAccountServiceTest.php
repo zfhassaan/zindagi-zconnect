@@ -8,6 +8,8 @@ use Tests\TestCase;
 use Mockery;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\RequestInterface;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\UpgradeMinorAccountResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\Services\OnboardingService;
@@ -104,5 +106,131 @@ class UpgradeMinorAccountServiceTest extends TestCase
         $this->assertTrue($response->success);
         $this->assertEquals('00', $response->responseCode);
         $this->assertEquals('Successful', $response->responseDescription);
+        $this->assertEquals('some_hash', $response->hashData);
+    }
+
+    public function test_failure_upgrade_minor_account(): void
+    {
+        $mockClient = Mockery::mock(Client::class);
+        $mockClient->shouldReceive('post')->once()->andReturn(new Response(200, [], json_encode([
+            'upgradeMinorAccountRes' => [
+                'ResponseCode' => '01',
+                'ResponseDescription' => 'Account not eligible',
+            ],
+        ])));
+
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockAuthService->shouldReceive('authenticate')->once()->andReturn('test_access_token');
+
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logRequest')->once();
+        $mockLoggingService->shouldReceive('logResponse')->once();
+
+        $mockAuditService = Mockery::mock(AuditServiceInterface::class);
+        $mockAuditService->shouldReceive('log')->once();
+
+        $service = $this->makeService($mockAuthService, $mockLoggingService, $mockAuditService, $mockClient);
+        $response = $service->upgradeMinorAccount($this->requestDto());
+
+        $this->assertFalse($response->success);
+        $this->assertEquals('01', $response->responseCode);
+        $this->assertEquals('Account not eligible', $response->responseDescription);
+    }
+
+    public function test_upgrade_minor_account_with_invalid_json(): void
+    {
+        $mockClient = Mockery::mock(Client::class);
+        $mockClient->shouldReceive('post')->once()->andReturn(new Response(200, [], 'not-json'));
+
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockAuthService->shouldReceive('authenticate')->once()->andReturn('test_access_token');
+
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logRequest')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
+
+        $service = $this->makeService($mockAuthService, $mockLoggingService, Mockery::mock(AuditServiceInterface::class), $mockClient);
+        $response = $service->upgradeMinorAccount($this->requestDto());
+
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('Invalid response from API', $response->responseDescription);
+    }
+
+    public function test_upgrade_minor_account_with_network_error(): void
+    {
+        $mockClient = Mockery::mock(Client::class);
+        $mockClient->shouldReceive('post')->once()->andThrow(new RequestException(
+            'Connection timeout',
+            Mockery::mock(RequestInterface::class)
+        ));
+
+        $mockAuthService = Mockery::mock(AuthenticationServiceInterface::class);
+        $mockAuthService->shouldReceive('authenticate')->once()->andReturn('test_access_token');
+
+        $mockLoggingService = Mockery::mock(LoggingServiceInterface::class);
+        $mockLoggingService->shouldReceive('logInfo')->once();
+        $mockLoggingService->shouldReceive('logRequest')->once();
+        $mockLoggingService->shouldReceive('logError')->once();
+
+        $service = $this->makeService($mockAuthService, $mockLoggingService, Mockery::mock(AuditServiceInterface::class), $mockClient);
+        $response = $service->upgradeMinorAccount($this->requestDto());
+
+        $this->assertFalse($response->success);
+        $this->assertStringContainsString('Failed to upgrade minor account', $response->responseDescription);
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
+
+    private function requestDto(): UpgradeMinorAccountRequestDTO
+    {
+        return new UpgradeMinorAccountRequestDTO(
+            rrn: '0090909998881',
+            dateTime: '20232311191919',
+            mobileNumber: '03200460403'
+        );
+    }
+
+    private function makeService($auth, $logging, $audit, Client $client): OnboardingService
+    {
+        config([
+            'zindagi-zconnect' => [
+                'api' => ['base_url' => 'https://z-sandbox.jsbl.com/zconnect'],
+                'auth' => [
+                    'client_id' => 'test_id',
+                    'organization_id' => '223',
+                ],
+                'modules' => [
+                    'onboarding' => [
+                        'upgrade_minor_account' => [
+                            'endpoint' => '/api/v1/UpgradeMinorAccount',
+                        ],
+                    ],
+                ],
+                'security' => ['verify_ssl' => true],
+            ],
+        ]);
+
+        $service = new OnboardingService(
+            Mockery::mock(\zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface::class),
+            $auth,
+            $logging,
+            $audit,
+            Mockery::mock(OnboardingRepositoryInterface::class),
+            Mockery::mock(AccountVerificationRepositoryInterface::class),
+            Mockery::mock(AccountLinkingRepositoryInterface::class),
+            Mockery::mock(AccountOpeningRepositoryInterface::class)
+        );
+
+        $property = (new \ReflectionClass($service))->getProperty('upgradeMinorAccountClient');
+        $property->setAccessible(true);
+        $property->setValue($service, $client);
+
+        return $service;
     }
 }
