@@ -181,6 +181,15 @@ return [
             'agent_account_opening_upgrade' => [
                 'endpoint' => '/api/v1/accountopeningagentl0',
             ],
+            'agent_device_changed' => [
+                'endpoint' => '/api/v1/agentdevicechanged',
+            ],
+            'agent_change_pin' => [
+                'endpoint' => '/api/v1/agentchangepin',
+            ],
+            'agent_otp_verification' => [
+                'endpoint' => '/api/v1/agentotpverification',
+            ],
             'l2_account_fields' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountFields',
             ],

@@ -68,6 +68,12 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceRequ
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDeviceChangedRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDeviceChangedResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentChangePinRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentChangePinResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentOtpVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentOtpVerificationResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -301,5 +307,20 @@ interface OnboardingServiceInterface
      * Open or upgrade a customer account via an agent.
      */
     public function agentAccountOpeningUpgrade(AgentAccountOpeningUpgradeRequestDTO $dto): AgentAccountOpeningUpgradeResponseDTO;
+
+    /**
+     * Register an agent device change.
+     */
+    public function agentDeviceChanged(AgentDeviceChangedRequestDTO $dto): AgentDeviceChangedResponseDTO;
+
+    /**
+     * Change an agent PIN.
+     */
+    public function agentChangePin(AgentChangePinRequestDTO $dto): AgentChangePinResponseDTO;
+
+    /**
+     * Verify an agent OTP.
+     */
+    public function agentOtpVerification(AgentOtpVerificationRequestDTO $dto): AgentOtpVerificationResponseDTO;
 }
 

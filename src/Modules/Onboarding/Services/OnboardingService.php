@@ -69,6 +69,12 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceRequ
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDeviceChangedRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDeviceChangedResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentChangePinRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentChangePinResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentOtpVerificationRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentOtpVerificationResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -154,6 +160,12 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $agentDebitCardIssuanceEndpoint;
     protected Client $agentAccountOpeningUpgradeClient;
     protected string $agentAccountOpeningUpgradeEndpoint;
+    protected Client $agentDeviceChangedClient;
+    protected string $agentDeviceChangedEndpoint;
+    protected Client $agentChangePinClient;
+    protected string $agentChangePinEndpoint;
+    protected Client $agentOtpVerificationClient;
+    protected string $agentOtpVerificationEndpoint;
 
 
     public function __construct(
@@ -577,6 +589,45 @@ class OnboardingService implements OnboardingServiceInterface
         $this->agentAccountOpeningUpgradeEndpoint = $agentAccountOpeningUpgradeConfig['endpoint'] ?? '/api/v1/accountopeningagentl0';
 
         $this->agentAccountOpeningUpgradeClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentDeviceChangedConfig = $config['modules']['onboarding']['agent_device_changed'] ?? [];
+        $this->agentDeviceChangedEndpoint = $agentDeviceChangedConfig['endpoint'] ?? '/api/v1/agentdevicechanged';
+
+        $this->agentDeviceChangedClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentChangePinConfig = $config['modules']['onboarding']['agent_change_pin'] ?? [];
+        $this->agentChangePinEndpoint = $agentChangePinConfig['endpoint'] ?? '/api/v1/agentchangepin';
+
+        $this->agentChangePinClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentOtpVerificationConfig = $config['modules']['onboarding']['agent_otp_verification'] ?? [];
+        $this->agentOtpVerificationEndpoint = $agentOtpVerificationConfig['endpoint'] ?? '/api/v1/agentotpverification';
+
+        $this->agentOtpVerificationClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -4426,6 +4477,316 @@ class OnboardingService implements OnboardingServiceInterface
             return new AgentAccountOpeningUpgradeResponseDTO(
                 success: false,
                 message: 'Agent account opening failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Register an agent device change.
+     */
+    public function agentDeviceChanged(AgentDeviceChangedRequestDTO $dto): AgentDeviceChangedResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent device changed', [
+                'user_id' => $dto->userId,
+                'udid' => $dto->udid,
+                'action' => $dto->action,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentDeviceChangedEndpoint, $requestBody, $headers);
+
+            $response = $this->agentDeviceChangedClient->post($this->agentDeviceChangedEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Device Changed API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentDeviceChangedResponseDTO(
+                    success: false,
+                    message: 'Agent device changed failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentDeviceChangedEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_device_changed',
+                'onboarding',
+                [
+                    'user_id' => $dto->userId,
+                    'udid' => $dto->udid,
+                    'action' => $dto->action,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                (string) $dto->userId
+            );
+
+            return AgentDeviceChangedResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent device changed',
+                [
+                    'user_id' => $dto->userId,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentDeviceChangedResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentDeviceChangedResponseDTO(
+                success: false,
+                message: 'Failed agent device changed: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent device changed error',
+                [
+                    'user_id' => $dto->userId,
+                ],
+                $e
+            );
+
+            return new AgentDeviceChangedResponseDTO(
+                success: false,
+                message: 'Agent device changed failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Change an agent PIN.
+     */
+    public function agentChangePin(AgentChangePinRequestDTO $dto): AgentChangePinResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent change pin', [
+                'dtid' => $dto->dtid,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentChangePinEndpoint, $requestBody, $headers);
+
+            $response = $this->agentChangePinClient->post($this->agentChangePinEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Change Pin API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentChangePinResponseDTO(
+                    success: false,
+                    message: 'Agent change pin failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentChangePinEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_change_pin',
+                'onboarding',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                (string) $dto->dtid
+            );
+
+            return AgentChangePinResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent change pin',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentChangePinResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentChangePinResponseDTO(
+                success: false,
+                message: 'Failed agent change pin: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent change pin error',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                $e
+            );
+
+            return new AgentChangePinResponseDTO(
+                success: false,
+                message: 'Agent change pin failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Verify an agent OTP.
+     */
+    public function agentOtpVerification(AgentOtpVerificationRequestDTO $dto): AgentOtpVerificationResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent OTP verification', [
+                'dtid' => $dto->dtid,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentOtpVerificationEndpoint, $requestBody, $headers);
+
+            $response = $this->agentOtpVerificationClient->post($this->agentOtpVerificationEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent OTP Verification API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentOtpVerificationResponseDTO(
+                    success: false,
+                    message: 'Agent OTP verification failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentOtpVerificationEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_otp_verification',
+                'onboarding',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                (string) $dto->dtid
+            );
+
+            return AgentOtpVerificationResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent OTP verification',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentOtpVerificationResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentOtpVerificationResponseDTO(
+                success: false,
+                message: 'Failed agent OTP verification: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent OTP verification error',
+                [
+                    'dtid' => $dto->dtid,
+                ],
+                $e
+            );
+
+            return new AgentOtpVerificationResponseDTO(
+                success: false,
+                message: 'Agent OTP verification failed: ' . $e->getMessage(),
             );
         }
     }
