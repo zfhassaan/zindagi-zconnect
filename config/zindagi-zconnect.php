@@ -158,6 +158,10 @@ return [
             'agent_cash_deposit' => [
                 'endpoint' => '/api/v1/agentcashdeposit',
             ],
+            'agent_cash_withdrawal_inquiry' => [
+                // Portal path typo preserved: withdrawl
+                'endpoint' => '/api/v1/agentcashdwithdrawlinquiry',
+            ],
             'l2_account_fields' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountFields',
             ],

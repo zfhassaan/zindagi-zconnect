@@ -54,6 +54,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryReq
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -252,5 +254,10 @@ interface OnboardingServiceInterface
      * Execute an agent cash deposit.
      */
     public function agentCashDeposit(AgentCashDepositRequestDTO $dto): AgentCashDepositResponseDTO;
+
+    /**
+     * Inquire cash withdrawal fees and eligibility before an agent cash withdrawal.
+     */
+    public function agentCashWithdrawalInquiry(AgentCashWithdrawalInquiryRequestDTO $dto): AgentCashWithdrawalInquiryResponseDTO;
 }
 

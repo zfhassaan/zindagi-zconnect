@@ -55,6 +55,8 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryReq
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositInquiryResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashDepositResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -126,6 +128,8 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $agentCashDepositInquiryEndpoint;
     protected Client $agentCashDepositClient;
     protected string $agentCashDepositEndpoint;
+    protected Client $agentCashWithdrawalInquiryClient;
+    protected string $agentCashWithdrawalInquiryEndpoint;
 
 
     public function __construct(
@@ -458,6 +462,19 @@ class OnboardingService implements OnboardingServiceInterface
         $this->agentCashDepositEndpoint = $agentCashDepositConfig['endpoint'] ?? '/api/v1/agentcashdeposit';
 
         $this->agentCashDepositClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentCashWithdrawalInquiryConfig = $config['modules']['onboarding']['agent_cash_withdrawal_inquiry'] ?? [];
+        $this->agentCashWithdrawalInquiryEndpoint = $agentCashWithdrawalInquiryConfig['endpoint'] ?? '/api/v1/agentcashdwithdrawlinquiry';
+
+        $this->agentCashWithdrawalInquiryClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -3556,6 +3573,113 @@ class OnboardingService implements OnboardingServiceInterface
             return new AgentCashDepositResponseDTO(
                 success: false,
                 message: 'Agent cash deposit failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Inquire cash withdrawal fees and eligibility before an agent cash withdrawal.
+     */
+    public function agentCashWithdrawalInquiry(AgentCashWithdrawalInquiryRequestDTO $dto): AgentCashWithdrawalInquiryResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent cash withdrawal inquiry', [
+                'agent_mobile' => $dto->agentMobile,
+                'customer_mobile' => $dto->customerMobile,
+                'transaction_amount' => $dto->transactionAmount,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentCashWithdrawalInquiryEndpoint, $requestBody, $headers);
+
+            $response = $this->agentCashWithdrawalInquiryClient->post($this->agentCashWithdrawalInquiryEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Cash Withdrawal Inquiry API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentCashWithdrawalInquiryResponseDTO(
+                    success: false,
+                    message: 'Agent cash withdrawal inquiry failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentCashWithdrawalInquiryEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_cash_withdrawal_inquiry',
+                'onboarding',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                    'transaction_amount' => $dto->transactionAmount,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentCashWithdrawalInquiryResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent cash withdrawal inquiry',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentCashWithdrawalInquiryResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentCashWithdrawalInquiryResponseDTO(
+                success: false,
+                message: 'Failed agent cash withdrawal inquiry: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent cash withdrawal inquiry error',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            return new AgentCashWithdrawalInquiryResponseDTO(
+                success: false,
+                message: 'Agent cash withdrawal inquiry failed: ' . $e->getMessage(),
             );
         }
     }
