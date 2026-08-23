@@ -166,6 +166,21 @@ return [
                 // Portal path typo preserved: withdrawl
                 'endpoint' => '/api/v1/agentcashdwithdrawl',
             ],
+            'agent_bill_payment_inquiry' => [
+                'endpoint' => '/api/v1/agentbillpaymentinquiry',
+            ],
+            'agent_bill_payment' => [
+                'endpoint' => '/api/v1/agentbillpayment',
+            ],
+            'agent_debit_card_issuance_info' => [
+                'endpoint' => '/api/v1/agentdebitcardissuanceinfo',
+            ],
+            'agent_debit_card_issuance' => [
+                'endpoint' => '/api/v1/agentdebitcardissuance',
+            ],
+            'agent_account_opening_upgrade' => [
+                'endpoint' => '/api/v1/accountopeningagentl0',
+            ],
             'l2_account_fields' => [
                 'endpoint' => '/api/v1/l2Account/l2AccountFields',
             ],

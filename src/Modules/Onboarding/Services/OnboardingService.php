@@ -59,6 +59,16 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiry
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentInquiryResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceInfoRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceInfoResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeResponseDTO;
 use zfhassaan\ZindagiZconnect\Services\Contracts\HttpClientInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\AuthenticationServiceInterface;
 use zfhassaan\ZindagiZconnect\Services\Contracts\LoggingServiceInterface;
@@ -134,6 +144,16 @@ class OnboardingService implements OnboardingServiceInterface
     protected string $agentCashWithdrawalInquiryEndpoint;
     protected Client $agentCashWithdrawalClient;
     protected string $agentCashWithdrawalEndpoint;
+    protected Client $agentBillPaymentInquiryClient;
+    protected string $agentBillPaymentInquiryEndpoint;
+    protected Client $agentBillPaymentClient;
+    protected string $agentBillPaymentEndpoint;
+    protected Client $agentDebitCardIssuanceInfoClient;
+    protected string $agentDebitCardIssuanceInfoEndpoint;
+    protected Client $agentDebitCardIssuanceClient;
+    protected string $agentDebitCardIssuanceEndpoint;
+    protected Client $agentAccountOpeningUpgradeClient;
+    protected string $agentAccountOpeningUpgradeEndpoint;
 
 
     public function __construct(
@@ -492,6 +512,71 @@ class OnboardingService implements OnboardingServiceInterface
         $this->agentCashWithdrawalEndpoint = $agentCashWithdrawalConfig['endpoint'] ?? '/api/v1/agentcashdwithdrawl';
 
         $this->agentCashWithdrawalClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentBillPaymentInquiryConfig = $config['modules']['onboarding']['agent_bill_payment_inquiry'] ?? [];
+        $this->agentBillPaymentInquiryEndpoint = $agentBillPaymentInquiryConfig['endpoint'] ?? '/api/v1/agentbillpaymentinquiry';
+
+        $this->agentBillPaymentInquiryClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentBillPaymentConfig = $config['modules']['onboarding']['agent_bill_payment'] ?? [];
+        $this->agentBillPaymentEndpoint = $agentBillPaymentConfig['endpoint'] ?? '/api/v1/agentbillpayment';
+
+        $this->agentBillPaymentClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentDebitCardIssuanceInfoConfig = $config['modules']['onboarding']['agent_debit_card_issuance_info'] ?? [];
+        $this->agentDebitCardIssuanceInfoEndpoint = $agentDebitCardIssuanceInfoConfig['endpoint'] ?? '/api/v1/agentdebitcardissuanceinfo';
+
+        $this->agentDebitCardIssuanceInfoClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentDebitCardIssuanceConfig = $config['modules']['onboarding']['agent_debit_card_issuance'] ?? [];
+        $this->agentDebitCardIssuanceEndpoint = $agentDebitCardIssuanceConfig['endpoint'] ?? '/api/v1/agentdebitcardissuance';
+
+        $this->agentDebitCardIssuanceClient = new Client([
+            'base_uri' => $baseUrl,
+            'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
+            'verify' => $config['security']['verify_ssl'] ?? true,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        $agentAccountOpeningUpgradeConfig = $config['modules']['onboarding']['agent_account_opening_upgrade'] ?? [];
+        $this->agentAccountOpeningUpgradeEndpoint = $agentAccountOpeningUpgradeConfig['endpoint'] ?? '/api/v1/accountopeningagentl0';
+
+        $this->agentAccountOpeningUpgradeClient = new Client([
             'base_uri' => $baseUrl,
             'timeout' => $config['modules']['onboarding']['timeout'] ?? 60,
             'verify' => $config['security']['verify_ssl'] ?? true,
@@ -3805,6 +3890,542 @@ class OnboardingService implements OnboardingServiceInterface
             return new AgentCashWithdrawalResponseDTO(
                 success: false,
                 message: 'Agent cash withdrawal failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Inquire bill details before an agent bill payment.
+     */
+    public function agentBillPaymentInquiry(AgentBillPaymentInquiryRequestDTO $dto): AgentBillPaymentInquiryResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent bill payment inquiry', [
+                'agent_mobile' => $dto->agentMobile,
+                'customer_mobile' => $dto->customerMobile,
+                'consumer' => $dto->consumer,
+                'bill_account_id' => $dto->billAccountId,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentBillPaymentInquiryEndpoint, $requestBody, $headers);
+
+            $response = $this->agentBillPaymentInquiryClient->post($this->agentBillPaymentInquiryEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Bill Payment Inquiry API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentBillPaymentInquiryResponseDTO(
+                    success: false,
+                    message: 'Agent bill payment inquiry failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentBillPaymentInquiryEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_bill_payment_inquiry',
+                'onboarding',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                    'consumer' => $dto->consumer,
+                    'bill_account_id' => $dto->billAccountId,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentBillPaymentInquiryResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent bill payment inquiry',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentBillPaymentInquiryResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentBillPaymentInquiryResponseDTO(
+                success: false,
+                message: 'Failed agent bill payment inquiry: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent bill payment inquiry error',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            return new AgentBillPaymentInquiryResponseDTO(
+                success: false,
+                message: 'Agent bill payment inquiry failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Execute an agent bill payment.
+     */
+    public function agentBillPayment(AgentBillPaymentRequestDTO $dto): AgentBillPaymentResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent bill payment', [
+                'agent_mobile' => $dto->agentMobile,
+                'customer_mobile' => $dto->customerMobile,
+                'consumer' => $dto->consumer,
+                'transaction_amount' => $dto->transactionAmount,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentBillPaymentEndpoint, $requestBody, $headers);
+
+            $response = $this->agentBillPaymentClient->post($this->agentBillPaymentEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Bill Payment API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentBillPaymentResponseDTO(
+                    success: false,
+                    message: 'Agent bill payment failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentBillPaymentEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_bill_payment',
+                'onboarding',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                    'consumer' => $dto->consumer,
+                    'transaction_amount' => $dto->transactionAmount,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentBillPaymentResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent bill payment',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentBillPaymentResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentBillPaymentResponseDTO(
+                success: false,
+                message: 'Failed agent bill payment: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent bill payment error',
+                [
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            return new AgentBillPaymentResponseDTO(
+                success: false,
+                message: 'Agent bill payment failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Check debit card issuance eligibility before requesting a card.
+     */
+    public function agentDebitCardIssuanceInfo(AgentDebitCardIssuanceInfoRequestDTO $dto): AgentDebitCardIssuanceInfoResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent debit card issuance info', [
+                'customer_mobile' => $dto->customerMobile,
+                'cnic' => $dto->cnic,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentDebitCardIssuanceInfoEndpoint, $requestBody, $headers);
+
+            $response = $this->agentDebitCardIssuanceInfoClient->post($this->agentDebitCardIssuanceInfoEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Debit Card Issuance INFO API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentDebitCardIssuanceInfoResponseDTO(
+                    success: false,
+                    message: 'Agent debit card issuance info failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentDebitCardIssuanceInfoEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_debit_card_issuance_info',
+                'onboarding',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                    'cnic' => $dto->cnic,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentDebitCardIssuanceInfoResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent debit card issuance info',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentDebitCardIssuanceInfoResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentDebitCardIssuanceInfoResponseDTO(
+                success: false,
+                message: 'Failed agent debit card issuance info: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent debit card issuance info error',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            return new AgentDebitCardIssuanceInfoResponseDTO(
+                success: false,
+                message: 'Agent debit card issuance info failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Request agent debit card issuance for a customer.
+     */
+    public function agentDebitCardIssuance(AgentDebitCardIssuanceRequestDTO $dto): AgentDebitCardIssuanceResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent debit card issuance', [
+                'customer_mobile' => $dto->customerMobile,
+                'cnic' => $dto->cnic,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentDebitCardIssuanceEndpoint, $requestBody, $headers);
+
+            $response = $this->agentDebitCardIssuanceClient->post($this->agentDebitCardIssuanceEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Debit Card Issuance API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentDebitCardIssuanceResponseDTO(
+                    success: false,
+                    message: 'Agent debit card issuance failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentDebitCardIssuanceEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_debit_card_issuance',
+                'onboarding',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                    'cnic' => $dto->cnic,
+                    'card_description' => $dto->cardDescription,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentDebitCardIssuanceResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent debit card issuance',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentDebitCardIssuanceResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentDebitCardIssuanceResponseDTO(
+                success: false,
+                message: 'Failed agent debit card issuance: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent debit card issuance error',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            return new AgentDebitCardIssuanceResponseDTO(
+                success: false,
+                message: 'Agent debit card issuance failed: ' . $e->getMessage(),
+            );
+        }
+    }
+
+    /**
+     * Open or upgrade a customer account via an agent.
+     */
+    public function agentAccountOpeningUpgrade(AgentAccountOpeningUpgradeRequestDTO $dto): AgentAccountOpeningUpgradeResponseDTO
+    {
+        try {
+            $this->loggingService->logInfo('Agent account opening and upgrade', [
+                'customer_mobile' => $dto->customerMobile,
+                'agent_mobile' => $dto->agentMobile,
+                'cnic' => $dto->cnic,
+                'customer_account_type' => $dto->customerAccountType,
+            ]);
+
+            $token = $this->authService->authenticate();
+            $config = config('zindagi-zconnect');
+
+            $headers = [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'clientId' => $config['auth']['client_id'],
+                'clientSecret' => $token,
+                'organizationId' => $config['auth']['organization_id'] ?? '223',
+            ];
+
+            $requestBody = $dto->toArray();
+
+            $this->loggingService->logRequest($this->agentAccountOpeningUpgradeEndpoint, $requestBody, $headers);
+
+            $response = $this->agentAccountOpeningUpgradeClient->post($this->agentAccountOpeningUpgradeEndpoint, [
+                'headers' => $headers,
+                'json' => $requestBody,
+            ]);
+
+            $responseBody = $response->getBody()->getContents();
+            $responseData = json_decode($responseBody, true);
+
+            if (! is_array($responseData)) {
+                $this->loggingService->logError(
+                    'Invalid response from Agent Account Opening & Upgrade API',
+                    ['response_body' => $responseBody],
+                    new \RuntimeException('Invalid JSON response')
+                );
+
+                return new AgentAccountOpeningUpgradeResponseDTO(
+                    success: false,
+                    message: 'Agent account opening failed: Invalid response from API'
+                );
+            }
+
+            $this->loggingService->logResponse(
+                $this->agentAccountOpeningUpgradeEndpoint,
+                $responseData,
+                $response->getStatusCode()
+            );
+
+            $this->auditService->log(
+                'agent_account_opening_upgrade',
+                'onboarding',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                    'agent_mobile' => $dto->agentMobile,
+                    'cnic' => $dto->cnic,
+                    'customer_account_type' => $dto->customerAccountType,
+                ],
+                (string) (auth()->id() ?? 'system'),
+                $dto->customerMobile
+            );
+
+            return AgentAccountOpeningUpgradeResponseDTO::fromApiResponse($responseData);
+        } catch (GuzzleException $e) {
+            $this->loggingService->logError(
+                'Failed agent account opening and upgrade',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                    'agent_mobile' => $dto->agentMobile,
+                ],
+                $e
+            );
+
+            $errorResponse = null;
+            if ($e->hasResponse()) {
+                $errorBody = $e->getResponse()->getBody()->getContents();
+                $errorResponse = json_decode($errorBody, true);
+            }
+
+            if (is_array($errorResponse)) {
+                return AgentAccountOpeningUpgradeResponseDTO::fromApiResponse($errorResponse);
+            }
+
+            return new AgentAccountOpeningUpgradeResponseDTO(
+                success: false,
+                message: 'Failed agent account opening: ' . $e->getMessage(),
+            );
+        } catch (\Exception $e) {
+            $this->loggingService->logError(
+                'Agent account opening error',
+                [
+                    'customer_mobile' => $dto->customerMobile,
+                ],
+                $e
+            );
+
+            return new AgentAccountOpeningUpgradeResponseDTO(
+                success: false,
+                message: 'Agent account opening failed: ' . $e->getMessage(),
             );
         }
     }

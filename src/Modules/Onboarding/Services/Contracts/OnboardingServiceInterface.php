@@ -58,6 +58,16 @@ use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiry
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalInquiryResponseDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalRequestDTO;
 use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentCashWithdrawalResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentInquiryRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentInquiryResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentBillPaymentResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceInfoRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceInfoResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentDebitCardIssuanceResponseDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeRequestDTO;
+use zfhassaan\ZindagiZconnect\Modules\Onboarding\DTOs\AgentAccountOpeningUpgradeResponseDTO;
 
 interface OnboardingServiceInterface
 {
@@ -266,5 +276,30 @@ interface OnboardingServiceInterface
      * Execute an agent cash withdrawal.
      */
     public function agentCashWithdrawal(AgentCashWithdrawalRequestDTO $dto): AgentCashWithdrawalResponseDTO;
+
+    /**
+     * Inquire bill details before an agent bill payment.
+     */
+    public function agentBillPaymentInquiry(AgentBillPaymentInquiryRequestDTO $dto): AgentBillPaymentInquiryResponseDTO;
+
+    /**
+     * Execute an agent bill payment.
+     */
+    public function agentBillPayment(AgentBillPaymentRequestDTO $dto): AgentBillPaymentResponseDTO;
+
+    /**
+     * Check debit card issuance eligibility before requesting a card.
+     */
+    public function agentDebitCardIssuanceInfo(AgentDebitCardIssuanceInfoRequestDTO $dto): AgentDebitCardIssuanceInfoResponseDTO;
+
+    /**
+     * Request agent debit card issuance for a customer.
+     */
+    public function agentDebitCardIssuance(AgentDebitCardIssuanceRequestDTO $dto): AgentDebitCardIssuanceResponseDTO;
+
+    /**
+     * Open or upgrade a customer account via an agent.
+     */
+    public function agentAccountOpeningUpgrade(AgentAccountOpeningUpgradeRequestDTO $dto): AgentAccountOpeningUpgradeResponseDTO;
 }
 
